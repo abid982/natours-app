@@ -140,6 +140,24 @@ app.patch('/api/v1/tours/:id', (req, res) => {
     });
 });
 
+// Handling DELETE Requests
+app.delete('/api/v1/tours/:id', (req, res) => {
+
+    // if (id > tours.length - 1) {
+   if (req.params.id * 1 > tours.length) {
+       return res.status(404).json({
+          status: 'fail',
+          message: 'Invalid id'
+       });
+   }
+
+    // 204 means no content and we usually not send any data back which means the data that we're receiving now no longer exists
+   res.status(204).json({
+       status: 'success',
+       data: null
+   });
+});
+
 // Create a port
 const port = 3000;
 
