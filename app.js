@@ -120,6 +120,26 @@ app.get('/api/v1/tours/:id', (req, res) => {
     });
 });
 
+// Handling PATCH(Update data) Requests
+// We need the id of the tour that should be updated
+app.patch('/api/v1/tours/:id', (req, res) => {
+
+     // if (id > tours.length - 1) {
+    if (req.params.id * 1 > tours.length) {
+        return res.status(404).json({
+           status: 'fail',
+           message: 'Invalid id'
+        });
+    }
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            tour: '<Updated tour here...>'
+        }
+    });
+});
+
 // Create a port
 const port = 3000;
 
