@@ -89,6 +89,37 @@ app.post('/api/v1/tours', (req, res) => {
     // res.send('Done!');
 });
 
+// Responding to URL Parameters
+// We can define multiple url parameters /api/v1/tours/:id/:x/:y
+// Optional parameters
+// /api/v1/tours/:id/:x/:y?
+app.get('/api/v1/tours/:id', (req, res) => {
+    console.log(req);
+    console.log(req.params);
+
+    // Convert string to a number
+    const id = req.params.id * 1;
+
+    const tour = tours.find(el => el.id === id);
+
+    console.log(tour);
+
+    // if (id > tours.length - 1) {
+    if (!tour) {
+        return res.status(404).json({
+            status: 'fail',
+            message: 'Invalid id'
+        });
+    }
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            tour
+        }
+    });
+});
+
 // Create a port
 const port = 3000;
 
