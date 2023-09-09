@@ -39,8 +39,7 @@ app.use(express.json());
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`, 'utf-8'));
 console.log(tours);
 
-// Route handler
-app.get('/api/v1/tours', (req, res) => {
+const getAllTours = (req, res) => {
     // Send back all the tours to the client
     // success, fail(error at the client), error(error at the server)
     // JSEND Data Specification
@@ -51,10 +50,36 @@ app.get('/api/v1/tours', (req, res) => {
             tours
         }
     });
-});
+};
 
-// So now we have our post route all setup it's working now and we also get access to the body and so what we want to do now is to actually persist our data into this tours-simple.json file so that our data is saved to our fictional database.
-app.post('/api/v1/tours', (req, res) => {
+const getTour = (req, res) => {
+    console.log(req);
+    console.log(req.params);
+
+    // Convert string to a number
+    const id = req.params.id * 1;
+
+    const tour = tours.find(el => el.id === id);
+
+    console.log(tour);
+
+    // if (id > tours.length - 1) {
+    if (!tour) {
+        return res.status(404).json({
+            status: 'fail',
+            message: 'Invalid id'
+        });
+    }
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            tour
+        }
+    });
+};
+
+const createTour = (req, res) => {
     // Now remember that with the post request we can send data from the client to the server and this data is then ideally available on the request object so the request object is what holds all the data all the information about the request that was done and if that request contains some data that was sent well then that data should be on the request object.
     // Well out of the box express does not put that body data on the request object an so in order to to have that data available we have to use something called middleware.
     console.log(req.body);
@@ -87,25 +112,12 @@ app.post('/api/v1/tours', (req, res) => {
     // We always need to send back something in order to finish the so called request-response cycle.
     // We send a response twice
     // res.send('Done!');
-});
+};
 
-// Responding to URL Parameters
-// We can define multiple url parameters /api/v1/tours/:id/:x/:y
-// Optional parameters
-// /api/v1/tours/:id/:x/:y?
-app.get('/api/v1/tours/:id', (req, res) => {
-    console.log(req);
-    console.log(req.params);
-
-    // Convert string to a number
-    const id = req.params.id * 1;
-
-    const tour = tours.find(el => el.id === id);
-
-    console.log(tour);
+const updateTour = (req, res) => {
 
     // if (id > tours.length - 1) {
-    if (!tour) {
+    if (req.params.id * 1 > tours.length) {
         return res.status(404).json({
             status: 'fail',
             message: 'Invalid id'
@@ -115,48 +127,36 @@ app.get('/api/v1/tours/:id', (req, res) => {
     res.status(200).json({
         status: 'success',
         data: {
-            tour
-        }
-    });
-});
-
-// Handling PATCH(Update data) Requests
-// We need the id of the tour that should be updated
-app.patch('/api/v1/tours/:id', (req, res) => {
-
-     // if (id > tours.length - 1) {
-    if (req.params.id * 1 > tours.length) {
-        return res.status(404).json({
-           status: 'fail',
-           message: 'Invalid id'
-        });
-    }
-
-    res.status(200).json({
-        status: 'success',
-        data: {
             tour: '<Updated tour here...>'
         }
     });
-});
+};
 
-// Handling DELETE Requests
-app.delete('/api/v1/tours/:id', (req, res) => {
+const deleteTour = (req, res) => {
 
     // if (id > tours.length - 1) {
-   if (req.params.id * 1 > tours.length) {
-       return res.status(404).json({
-          status: 'fail',
-          message: 'Invalid id'
-       });
-   }
+    if (req.params.id * 1 > tours.length) {
+        return res.status(404).json({
+            status: 'fail',
+            message: 'Invalid id'
+        });
+    }
 
     // 204 means no content and we usually not send any data back which means the data that we're receiving now no longer exists
-   res.status(204).json({
-       status: 'success',
-       data: null
-   });
-});
+    res.status(204).json({
+        status: 'success',
+        data: null
+    });
+};
+
+// app.get('/api/v1/tours', getAllTours);
+// app.get('/api/v1/tours/:id', getTour);
+// app.post('/api/v1/tours', createTour);
+// app.patch('/api/v1/tours/:id', updateTour);
+// app.delete('/api/v1/tours/:id', deleteTour);
+
+app.route('/api/v1/tours').get(getAllTours).post(createTour);
+app.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour);
 
 // Create a port
 const port = 3000;
@@ -168,4 +168,3 @@ app.listen();
 app.listen(port, () => {
     console.log(`App running on port ${port}...`);
 });
-
