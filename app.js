@@ -4,9 +4,20 @@ const fs = require('fs');
 // Import 3rd party modules
 const express = require('express');
 
+// 3rd party middleware called morgan which makes our development life a bit easier
+// There are a log of third party middlewares
+// https://expressjs.com/en/resources/middleware.html
+var morgan = require('morgan');
+// GET /api/v1/tours/ 200 13.957 ms - 8621
+
 // Assign the result of calling express
 // This is actually a function which upon calling will add a bunch of methods to our app variable
 const app = express();
+
+// 1) Middlewares
+
+// So calling morgan function will return a function similar to callback function in app.use((req, res, next) => { })
+app.use(morgan('dev'));
 
 // In order to use to middleware we use app.use() so the use method is the one that we use in order to actually use middleware so add middleware to our middleware stack so this express.json() function here calling the json method basically return a function so that function is then added to the middleware stack.
 // So similar to that we create our own middleware function
@@ -41,6 +52,7 @@ app.use((req, res, next) => {
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`, 'utf-8'));
 console.log(tours);
 
+// 2) Route Handlers
 const getAllTours = (req, res) => {
     // Send back all the tours to the client
     // success, fail(error at the client), error(error at the server)
@@ -151,12 +163,12 @@ const deleteTour = (req, res) => {
     });
 };
 
+// 3) Routes
 // app.get('/api/v1/tours', getAllTours);
 // app.get('/api/v1/tours/:id', getTour);
 // app.post('/api/v1/tours', createTour);
 // app.patch('/api/v1/tours/:id', updateTour);
 // app.delete('/api/v1/tours/:id', deleteTour);
-
 app.route('/api/v1/tours').get(getAllTours).post(createTour);
 
 // Note: When we make a call to this route 127.0.01:3000/api/v1/tours/ we don't have "Hello from the middleware!" because the above route() handler middleware comes before our own middleware and this route handler which in this case is getAllTours() actually ends the request response cycle.
@@ -173,6 +185,7 @@ app.route('/api/v1/tours').get(getAllTours).post(createTour);
 
 app.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour);
 
+// 4) Start the server
 // Create a port
 const port = 3000;
 
