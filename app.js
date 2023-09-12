@@ -1,13 +1,13 @@
 // Import core modules
 const fs = require('fs');
 
-// Import 3rd party modules
+// Import third party modules
 const express = require('express');
 
-// 3rd party middleware called morgan which makes our development life a bit easier
+// Third party middleware called morgan which makes our development life a bit easier
+var morgan = require('morgan');
 // There are a log of third party middlewares
 // https://expressjs.com/en/resources/middleware.html
-var morgan = require('morgan');
 // GET /api/v1/tours/ 200 13.957 ms - 8621
 
 // Assign the result of calling express
