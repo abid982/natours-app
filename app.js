@@ -163,6 +163,46 @@ const deleteTour = (req, res) => {
     });
 };
 
+const getAllUsers = (req, res) => {
+    // 500 error code means internal server error
+    res.status(500).json({
+        status: 'error',
+        message: 'This route is not yet defined!'
+    });
+};
+
+const getUser = (req, res) => {
+    // 500 error code means internal server error
+    res.status(500).json({
+        status: 'error',
+        message: 'This route is not yet defined!'
+    });
+};
+
+const createUser = (req, res) => {
+    // 500 error code means internal server error
+    res.status(500).json({
+        status: 'error',
+        message: 'This route is not yet defined!'
+    });
+};
+
+const updateUser = (req, res) => {
+    // 500 error code means internal server error
+    res.status(500).json({
+        status: 'error',
+        message: 'This route is not yet defined!'
+    });
+};
+
+const deleteUser = (req, res) => {
+    // 500 error code means internal server error
+    res.status(500).json({
+        status: 'error',
+        message: 'This route is not yet defined!'
+    });
+};
+
 // 3) Routes
 // app.get('/api/v1/tours', getAllTours);
 // app.get('/api/v1/tours/:id', getTour);
@@ -184,6 +224,13 @@ app.route('/api/v1/tours').get(getAllTours).post(createTour);
 // });
 
 app.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour);
+
+// Let's now implement routes for the users resource. So our API will have a couple of different resources. The first one that we already talked about and started to implement is the tours resource but another one will be the users resource so that for example we can create a user account and have different user roles and all that good stuff that comes with users right.
+// Now of course for now this users resource will be very similar to the tours resource.
+
+app.route('/api/v1/users').get(getAllUsers).post(createUser);
+
+app.route('/api/v1/users/:id').get(getUser).patch(updateUser).delete(deleteUser);
 
 // 4) Start the server
 // Create a port
