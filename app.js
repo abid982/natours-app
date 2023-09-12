@@ -8,31 +8,33 @@ const express = require('express');
 // This is actually a function which upon calling will add a bunch of methods to our app variable
 const app = express();
 
+// In order to use to middleware we use app.use() so the use method is the one that we use in order to actually use middleware so add middleware to our middleware stack so this express.json() function here calling the json method basically return a function so that function is then added to the middleware stack.
+// So similar to that we create our own middleware function
 // Include middleware at the top of the file
-// This express.json() is a middleware and middleware is basically just a function that can modify the incoming request data so it's called middleware because it stands between so in the middle of the request and the response so it's just a step that the request goes through while it's being processed and the step the request goes through in this example is simply that the data from the body is added to it so it's added to the request object by using this middleware.
-// We use app.use() method in order to use middleware
 app.use(express.json());
 
-// Define routes
-// Remember that routing means basically to determine how an application responds to a certain client request so to a certain url right and actually it's not just the url but also the http method which is used for that request.
-// Note: By using the json() method this will automatically set our content-type to 'application/json'
-// 127.0.0.1:3000
-// app.get('/', (req, res) => {
+// Creating our own middleware
+// We still need to use app.use() and now in here all we have to do is to pass in our function that want to add to the middleware stack.
+// Note: In each middleware function we have access to the request and the response but also we have the next function
+// Add third argument to the middleware function
+// Define a middleware function
+// Send a simple request to our api
+// This single middleware applies to each and every single request and that's because we didn't specify any route.
+app.use((req, res, next) => {
+    // Run code each time there is a new request
+    console.log('Hello from the middleware!');
 
-//     // Send data back as response to the client
-//     // res.status(200).send('Hello from the server side!');
-//     res.status(200).json({
-//         message: 'Hello from the server side!',
-//         app: 'Natours'
-//     })
-// });
+    // We actually need to call the next function and if we didn't call next well then the request response cycle would really be stuck at this point. We wouldn't be ablt to move on and we would never ever send back a response to the client.
+    // Don't forget to use next in all of your middleware
+    next();
+});
 
-// app.post('/', (req, res) => {
-//     res.send('You can post to this endpoint...');
-// });
+app.use((req, res, next) => {
+    req.requestTime = new Date().toISOString();
 
-////////////////////////////////////////////
-// Starting Our API Handling GET Requests
+    // Don't forget to call the next middleware on the stack
+    next();
+});
 
 // Read file
 // So __dirname is the folder where the current script is located and so that is this main folder.
@@ -42,9 +44,13 @@ console.log(tours);
 const getAllTours = (req, res) => {
     // Send back all the tours to the client
     // success, fail(error at the client), error(error at the server)
+
+    console.log(req.requestTime);
+
     // JSEND Data Specification
     res.status(200).json({
         status: 'success',
+        requestedAt: req.requestTime,
         results: tours.length,
         data: {
             tours
@@ -80,8 +86,6 @@ const getTour = (req, res) => {
 };
 
 const createTour = (req, res) => {
-    // Now remember that with the post request we can send data from the client to the server and this data is then ideally available on the request object so the request object is what holds all the data all the information about the request that was done and if that request contains some data that was sent well then that data should be on the request object.
-    // Well out of the box express does not put that body data on the request object an so in order to to have that data available we have to use something called middleware.
     console.log(req.body);
     console.log(req.body.name);
 
@@ -95,12 +99,10 @@ const createTour = (req, res) => {
     tours.push(newTour);
 
     // Persist into file
-    // We're inside of a callback function that is going to run in the event loop and so we can never ever block the event loop and so what we're going to use write file and not the synchronous one so we want to pass in a callback function that is going to be processed in the background and as soon as it's ready it's going to put its event in one of the event loop queue which is then going to be handled as soon as the event loop passes that phase
-    // Overwrite the file
-    // This is the file where we want to write to and then the data that we want to write which is tours
     fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(tours), err => {
         // What we want to do as soon as the file is written?
         // Well what we usually do is to send the newly created object as the response.
+        console.log(err);
         res.status(201).json({
             status: 'success',
             data: {
@@ -156,6 +158,19 @@ const deleteTour = (req, res) => {
 // app.delete('/api/v1/tours/:id', deleteTour);
 
 app.route('/api/v1/tours').get(getAllTours).post(createTour);
+
+// Note: When we make a call to this route 127.0.01:3000/api/v1/tours/ we don't have "Hello from the middleware!" because the above route() handler middleware comes before our own middleware and this route handler which in this case is getAllTours() actually ends the request response cycle.
+// With res.json() we actually end the request response cycle and so the next middleware in the stack which in this case the custom one that we created will then not be called.
+
+// app.use((req, res, next) => {
+//     // Run code each time there is a new request
+//     console.log('Hello from the middleware!');
+
+//     // We actually need to call the next function and if we didn't call next well then the request response cycle would really be stuck at this point. We wouldn't be ablt to move on and we would never ever send back a response to the client.
+//     // Don't forget to use next in all of your middleware
+//     next();
+// });
+
 app.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour);
 
 // Create a port
