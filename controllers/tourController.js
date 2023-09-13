@@ -5,6 +5,18 @@ const fs = require('fs');
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, 'utf-8'));
 console.log(tours);
 
+exports.checkID = (req, res, next, val) => {
+    console.log(`Tour is id: ${val}`);
+    if (req.params.id * 1 > tours.length) {
+        return res.status(404).json({
+            status: 'fail',
+            message: 'Invalid ID'
+        });
+    }
+
+    next();
+};
+
 // 2) Route Handlers
 exports.getAllTours = (req, res) => {
     // Send back all the tours to the client
@@ -24,15 +36,15 @@ exports.getAllTours = (req, res) => {
 };
 
 exports.getTour = (req, res) => {
-    console.log(req);
-    console.log(req.params);
+    // console.log(req);
+    // console.log(req.params);
 
     // Convert string to a number
     const id = req.params.id * 1;
 
     const tour = tours.find(el => el.id === id);
 
-    console.log(tour);
+    // console.log(tour);
 
     // if (id > tours.length - 1) {
     if (!tour) {
@@ -51,8 +63,8 @@ exports.getTour = (req, res) => {
 };
 
 exports.createTour = (req, res) => {
-    console.log(req.body);
-    console.log(req.body.name);
+    // console.log(req.body);
+    // console.log(req.body.name);
 
     // Create a new id
     const newId = tours[tours.length - 1].id + 1;
@@ -84,12 +96,12 @@ exports.createTour = (req, res) => {
 exports.updateTour = (req, res) => {
 
     // if (id > tours.length - 1) {
-    if (req.params.id * 1 > tours.length) {
-        return res.status(404).json({
-            status: 'fail',
-            message: 'Invalid id'
-        });
-    }
+    // if (req.params.id * 1 > tours.length) {
+    //     return res.status(404).json({
+    //         status: 'fail',
+    //         message: 'Invalid id'
+    //     });
+    // }
 
     res.status(200).json({
         status: 'success',
@@ -102,12 +114,12 @@ exports.updateTour = (req, res) => {
 exports.deleteTour = (req, res) => {
 
     // if (id > tours.length - 1) {
-    if (req.params.id * 1 > tours.length) {
-        return res.status(404).json({
-            status: 'fail',
-            message: 'Invalid id'
-        });
-    }
+    // if (req.params.id * 1 > tours.length) {
+    //     return res.status(404).json({
+    //         status: 'fail',
+    //         message: 'Invalid id'
+    //     });
+    // }
 
     // 204 means no content and we usually not send any data back which means the data that we're receiving now no longer exists
     res.status(204).json({
