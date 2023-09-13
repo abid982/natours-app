@@ -203,13 +203,33 @@ const deleteUser = (req, res) => {
     });
 };
 
+// Creating and Mounting Multiple Routers
+// Create a new router and save into a variable
+// How to connect this new router with our application? Well we will use it as middleware because this tour router here is actually a middleware.
+// The tourRouter middleware only runs on route /api/v1/tours and so once we are in the router then we already are at /api/v1/tours route.
+const tourRouter = express.Router();
+const userRouter = express.Router();
+
+// The tourRouter here is a middleware and we want to use this middleware for this specific /api/v1/tours route. The tourRouter is a middleware function on route /api/v1/tours.
+// We actually create a small sub app for each resources.
+// This is already in our kind of parent route up here right. The tourRouter is a small mini application.
+// We cannot user routers before we actually declare them.
+// If there is now a request for /api/v1/users/:id then the request will enter the middleware stack and when it hits this middleware here it will run the user router because this route here is matched and so then it enters the user router
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
+
 // 3) Routes
 // app.get('/api/v1/tours', getAllTours);
 // app.get('/api/v1/tours/:id', getTour);
 // app.post('/api/v1/tours', createTour);
 // app.patch('/api/v1/tours/:id', updateTour);
 // app.delete('/api/v1/tours/:id', deleteTour);
-app.route('/api/v1/tours').get(getAllTours).post(createTour);
+// app.route('/api/v1/tours').get(getAllTours).post(createTour);
+// tourRouter.route('/api/v1/tours').get(getAllTours).post(createTour);
+// Sub application
+// Mini application
+tourRouter.route('/').get(getAllTours).post(createTour);
+
 
 // Note: When we make a call to this route 127.0.01:3000/api/v1/tours/ we don't have "Hello from the middleware!" because the above route() handler middleware comes before our own middleware and this route handler which in this case is getAllTours() actually ends the request response cycle.
 // With res.json() we actually end the request response cycle and so the next middleware in the stack which in this case the custom one that we created will then not be called.
@@ -223,14 +243,18 @@ app.route('/api/v1/tours').get(getAllTours).post(createTour);
 //     next();
 // });
 
-app.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour);
+// app.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour);
+// tourRouter.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour);
+tourRouter.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
 
 // Let's now implement routes for the users resource. So our API will have a couple of different resources. The first one that we already talked about and started to implement is the tours resource but another one will be the users resource so that for example we can create a user account and have different user roles and all that good stuff that comes with users right.
 // Now of course for now this users resource will be very similar to the tours resource.
 
-app.route('/api/v1/users').get(getAllUsers).post(createUser);
+// app.route('/api/v1/users').get(getAllUsers).post(createUser);
+userRouter.route('/').get(getAllUsers).post(createUser);
 
-app.route('/api/v1/users/:id').get(getUser).patch(updateUser).delete(deleteUser);
+// app.route('/api/v1/users/:id').get(getUser).patch(updateUser).delete(deleteUser);
+userRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
 
 // 4) Start the server
 // Create a port
