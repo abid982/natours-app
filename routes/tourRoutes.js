@@ -17,7 +17,14 @@ const router = express.Router();
 
 router.param('id', tourController.checkID);
 
-router.route('/').get(tourController.getAllTours).post(tourController.createTour);
+// Create a checkBody middleware
+// Check if body contains the name and price property
+// If not, send back 400 (bad request which means invalid request from the client)
+// Add it to the post handler stack
+
+// Create multiple middleware functions
+// Run a middleware before create tour to actually check the data that is coming in the body.
+router.route('/').get(tourController.getAllTours).post(tourController.checkBody, tourController.createTour);
 
 router.route('/:id').get(tourController.getTour).patch(tourController.updateTour).delete(tourController.deleteTour);
 

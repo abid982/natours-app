@@ -17,6 +17,22 @@ exports.checkID = (req, res, next, val) => {
     next();
 };
 
+exports.checkBody = (req, res, next) => {
+
+    console.log('Request in check body middleware handler:');
+    console.log(req.body);
+    // { name: 'Murree Tour', duration: 35, difficulty: 'medium' }
+
+    if (!req.body.name || !req.body.duration) {
+       return res.status(400).json({
+            status: 'fail',
+            message: 'Missing name or price'
+        });
+    }
+
+    next();
+};
+
 // 2) Route Handlers
 exports.getAllTours = (req, res) => {
     // Send back all the tours to the client
