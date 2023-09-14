@@ -1,6 +1,14 @@
+const dotenv = require('dotenv');
+dotenv.config({ path: './config.env' });
 const app = require('./app');
 
-const port = 3000;
+const port = process.env.PORT || 3000;
+
+// We get the env variable
+console.log(app.get('env'));
+
+// Node.js environment variables
+console.log(process.env);
 
 app.listen();
 
