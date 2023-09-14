@@ -25,6 +25,15 @@ app.use(morgan('dev'));
 // Include middleware at the top of the file
 app.use(express.json());
 
+// Use a simple built-in middleware
+// Pass directory from which we want to serve static files and in this case is the public directory.
+// This is a built-in middleware function in Express. It serves static files and is based on serve-static.
+app.use(express.static(`${__dirname}/public`));
+// http://127.0.0.1:3000/overview.html
+// Why we don't need public folder in url?
+// Well simply because when we open up a url that it can't find in any of our routes it will then look in that public folder that we defined and it kind of sets that folder to the root.
+// http://127.0.0.1:3000/img/pin.png
+
 // Creating our own middleware
 // We still need to use app.use() and now in here all we have to do is to pass in our function that want to add to the middleware stack.
 // Note: In each middleware function we have access to the request and the response but also we have the next function

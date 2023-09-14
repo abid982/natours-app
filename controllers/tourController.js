@@ -3,7 +3,7 @@ const fs = require('fs');
 // Read file
 // So __dirname is the folder where the current script is located and so that is this main folder.
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, 'utf-8'));
-console.log(tours);
+// console.log(tours);
 
 exports.checkID = (req, res, next, val) => {
     console.log(`Tour is id: ${val}`);
