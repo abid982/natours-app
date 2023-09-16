@@ -37,6 +37,28 @@ const tourSchema = new mongoose.Schema({
 
 const Tour = mongoose.model('Tour', tourSchema);
 
+// This is a new document that we created out of tour model or function constructors
+// It is an instance of the Tour model
+// const testTour = new Tour({
+//     name: 'The Murre Trip',
+//     rating: 4.8,
+//     price: 697
+// });
+// A tour must have a price
+const testTour = new Tour({
+    name: 'The Sea Explorer',
+    price: 997
+});
+
+// Save testTour document to the database
+// Now this save method will return a promise that we can then consume
+testTour.save().then(document => {
+    console.log('Document:');
+    console.log(document);
+}).catch(err => {
+    console.log('Error:', err);
+});
+
 const port = process.env.PORT || 3000;
 
 // We get the env variable
