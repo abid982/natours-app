@@ -13,6 +13,30 @@ mongoose.connect(DB).then((connection) => {
     console.log(connection.connections);
 }).catch(err => console.log(err));
 
+// const tourSchema = new mongoose.Schema({
+//     name: String,
+//     rating: Number,
+//     price: Number
+// });
+
+const tourSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: [true, 'A tour must have a number'],
+        unique: true
+    },
+    rating: {
+        type: Number,
+        default: 4.5
+    },
+    price: {
+        type: Number,
+        required: [true, 'A tour must have a price']
+    }
+});
+
+const Tour = mongoose.model('Tour', tourSchema);
+
 const port = process.env.PORT || 3000;
 
 // We get the env variable
