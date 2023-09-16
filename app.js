@@ -3,7 +3,7 @@ const express = require('express');
 
 // Third party middleware called morgan which makes our development life a bit easier
 
-var morgan = require('morgan');
+const morgan = require('morgan');
 // There are a log of third party middlewares
 // https://expressjs.com/en/resources/middleware.html
 // GET /api/v1/tours/ 200 13.957 ms - 8621
@@ -24,9 +24,7 @@ const app = express();
 console.log('Process environment:');
 console.log(process.env.NODE_ENV);
 
-if (process.env.NODE_ENV === 'development') {
-    app.use(morgan('dev'));
-}
+if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
 // In order to use to middleware we use app.use() so the use method is the one that we use in order to actually use middleware so add middleware to our middleware stack so this express.json() function here calling the json method basically return a function so that function is then added to the middleware stack.
 // So similar to that we create our own middleware function
