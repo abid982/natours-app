@@ -19,24 +19,6 @@ mongoose.connect(DB).then((connection) => {
 //     price: Number
 // });
 
-const tourSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: [true, 'A tour must have a number'],
-        unique: true
-    },
-    rating: {
-        type: Number,
-        default: 4.5
-    },
-    price: {
-        type: Number,
-        required: [true, 'A tour must have a price']
-    }
-});
-
-const Tour = mongoose.model('Tour', tourSchema);
-
 // This is a new document that we created out of tour model or function constructors
 // It is an instance of the Tour model
 // const testTour = new Tour({
@@ -45,19 +27,10 @@ const Tour = mongoose.model('Tour', tourSchema);
 //     price: 697
 // });
 // A tour must have a price
-const testTour = new Tour({
-    name: 'The Sea Explorer',
-    price: 997
-});
-
-// Save testTour document to the database
-// Now this save method will return a promise that we can then consume
-testTour.save().then(document => {
-    console.log('Document:');
-    console.log(document);
-}).catch(err => {
-    console.log('Error:', err);
-});
+// const testTour = new Tour({
+//     name: 'The Sea Explorer',
+//     price: 997
+// });
 
 const port = process.env.PORT || 3000;
 

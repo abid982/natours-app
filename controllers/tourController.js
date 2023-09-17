@@ -1,21 +1,22 @@
 const fs = require('fs');
+const Tour = require('./../models/tourModel');
 
 // Read file
 // So __dirname is the folder where the current script is located and so that is this main folder.
-const tours = JSON.parse(fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, 'utf-8'));
+// const tours = JSON.parse(fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, 'utf-8'));
 // console.log(tours);
 
-exports.checkID = (req, res, next, val) => {
-    console.log(`Tour is id: ${val}`);
-    if (req.params.id * 1 > tours.length) {
-        return res.status(404).json({
-            status: 'fail',
-            message: 'Invalid ID'
-        });
-    }
+// exports.checkID = (req, res, next, val) => {
+//     console.log(`Tour is id: ${val}`);
+//     if (req.params.id * 1 > tours.length) {
+//         return res.status(404).json({
+//             status: 'fail',
+//             message: 'Invalid ID'
+//         });
+//     }
 
-    next();
-};
+//     next();
+// };
 
 exports.checkBody = (req, res, next) => {
 
@@ -44,10 +45,10 @@ exports.getAllTours = (req, res) => {
     res.status(200).json({
         status: 'success',
         requestedAt: req.requestTime,
-        results: tours.length,
-        data: {
-            tours
-        }
+        // results: tours.length,
+        // data: {
+        //     tours
+        // }
     });
 };
 
@@ -58,51 +59,58 @@ exports.getTour = (req, res) => {
     // Convert string to a number
     const id = req.params.id * 1;
 
-    const tour = tours.find(el => el.id === id);
+    // const tour = tours.find(el => el.id === id);
 
-    // console.log(tour);
+    // // console.log(tour);
 
-    // if (id > tours.length - 1) {
-    if (!tour) {
-        return res.status(404).json({
-            status: 'fail',
-            message: 'Invalid id'
-        });
-    }
+    // // if (id > tours.length - 1) {
+    // if (!tour) {
+    //     return res.status(404).json({
+    //         status: 'fail',
+    //         message: 'Invalid id'
+    //     });
+    // }
 
-    res.status(200).json({
-        status: 'success',
-        data: {
-            tour
-        }
-    });
+    // res.status(200).json({
+    //     status: 'success',
+    //     data: {
+    //         tour
+    //     }
+    // });
 };
 
 exports.createTour = (req, res) => {
     // console.log(req.body);
     // console.log(req.body.name);
 
-    // Create a new id
-    const newId = tours[tours.length - 1].id + 1;
-    // Create a new tour
-    // The Object.assign() allows us to create a new object by merging to existing objects together.
-    const newTour = Object.assign({ id: newId }, req.body);
-
-    // Push tours into the tours array
-    tours.push(newTour);
-
-    // Persist into file
-    fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(tours), err => {
-        // What we want to do as soon as the file is written?
-        // Well what we usually do is to send the newly created object as the response.
-        console.log(err);
-        res.status(201).json({
-            status: 'success',
-            data: {
-                tour: newTour
-            }
-        })
+    res.status(201).json({
+        status: 'success',
+        // data: {
+        //     tour: newTour
+        // }
     });
+
+    // // Create a new id
+    // const newId = tours[tours.length - 1].id + 1;
+    // // Create a new tour
+    // // The Object.assign() allows us to create a new object by merging to existing objects together.
+    // const newTour = Object.assign({ id: newId }, req.body);
+
+    // // Push tours into the tours array
+    // tours.push(newTour);
+
+    // // Persist into file
+    // fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(tours), err => {
+    //     // What we want to do as soon as the file is written?
+    //     // Well what we usually do is to send the newly created object as the response.
+    //     console.log(err);
+    //     res.status(201).json({
+    //         status: 'success',
+    //         data: {
+    //             tour: newTour
+    //         }
+    //     });
+    // });
 
     // We always need to send back something in order to finish the so called request-response cycle.
     // We send a response twice
