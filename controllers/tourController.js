@@ -35,29 +35,57 @@ const Tour = require('./../models/tourModel');
 // };
 
 // 2) Route Handlers
-exports.getAllTours = (req, res) => {
+exports.getAllTours = async (req, res) => {
+    try {
+        const tours = await Tour.find();
+        console.log('All tours:');
+        console.log(tours);
+
+        // JSEND Data Specification
+        res.status(200).json({
+            status: 'success',
+            // requestedAt: req.requestTime,
+            results: tours.length,
+            data: {
+                tours
+            }
+        });
+    } catch (err) {
+        res.status(404).json({
+            status: 'fail',
+            message: err
+        });
+    }
     // Send back all the tours to the client
     // success, fail(error at the client), error(error at the server)
 
-    console.log(req.requestTime);
-
-    // JSEND Data Specification
-    res.status(200).json({
-        status: 'success',
-        requestedAt: req.requestTime,
-        // results: tours.length,
-        // data: {
-        //     tours
-        // }
-    });
+    // console.log(req.requestTime);
 };
 
-exports.getTour = (req, res) => {
+exports.getTour = async (req, res) => {
+
+    try {
+        // const tour = await Tour.findById({ _id: req.params.id });
+        const tour = await Tour.findById(req.params.id);
+        // Tour.findOne({ _id: req.params.id });
+
+        res.status(200).json({
+            status: 'success',
+            data: {
+                tour
+            }
+        });
+    } catch (err) {
+        res.status(404).json({
+            status: 'fail',
+            message: err
+        });
+    }
     // console.log(req);
     // console.log(req.params);
 
     // Convert string to a number
-    const id = req.params.id * 1;
+    // const id = req.params.id * 1;
 
     // const tour = tours.find(el => el.id === id);
 
