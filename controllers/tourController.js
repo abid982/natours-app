@@ -128,7 +128,7 @@ exports.createTour = async (req, res) => {
             status: 'fail',
             message: err
             // message: 'Invalid data set'
-        })
+        });
     }
     // console.log(req.body);
     // console.log(req.body.name);
@@ -167,7 +167,7 @@ exports.createTour = async (req, res) => {
     // res.send('Done!');
 };
 
-exports.updateTour = (req, res) => {
+exports.updateTour = async (req, res) => {
 
     // if (id > tours.length - 1) {
     // if (req.params.id * 1 > tours.length) {
@@ -176,16 +176,40 @@ exports.updateTour = (req, res) => {
     //         message: 'Invalid id'
     //     });
     // }
+
+    console.log('Reques body:');
+    console.log(req.body);
+
+    try {
+        // Query document that we want to update
+    //     await Tour.findByIdAndUpdte({
+    //     { _id: req.params.id },
+
+        //    });
+
+        const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true
+        });
+
+        console.log('Updated tour:');
+        console.log(updatedTour);
 
     res.status(200).json({
         status: 'success',
         data: {
-            tour: '<Updated tour here...>'
+            tour: updatedTour
         }
     });
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: err
+        });
+    }
 };
 
-exports.deleteTour = (req, res) => {
+exports.deleteTour = async (req, res) => {
 
     // if (id > tours.length - 1) {
     // if (req.params.id * 1 > tours.length) {
@@ -195,9 +219,19 @@ exports.deleteTour = (req, res) => {
     //     });
     // }
 
-    // 204 means no content and we usually not send any data back which means the data that we're receiving now no longer exists
-    res.status(204).json({
-        status: 'success',
-        data: null
-    });
+    try {
+        await Tour.findByIdAndDelete(req.params.id);
+
+         // 204 means no content and we usually not send any data back which means the data that we're receiving now no longer exists
+        res.status(204).json({
+            status: 'success',
+            data: null
+        });
+
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: err
+        });
+    }
 };
