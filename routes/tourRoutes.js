@@ -24,7 +24,8 @@ const router = express.Router();
 
 // Create multiple middleware functions
 // Run a middleware before create tour to actually check the data that is coming in the body.
-router.route('/').get(tourController.getAllTours).post(tourController.checkBody, tourController.createTour);
+// router.route('/').get(tourController.getAllTours).post(tourController.checkBody, tourController.createTour);
+router.route('/').get(tourController.getAllTours).post(tourController.createTour);
 
 router.route('/:id').get(tourController.getTour).patch(tourController.updateTour).delete(tourController.deleteTour);
 

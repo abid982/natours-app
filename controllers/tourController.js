@@ -18,21 +18,21 @@ const Tour = require('./../models/tourModel');
 //     next();
 // };
 
-exports.checkBody = (req, res, next) => {
+// exports.checkBody = (req, res, next) => {
 
-    console.log('Request in check body middleware handler:');
-    console.log(req.body);
-    // { name: 'Murree Tour', duration: 35, difficulty: 'medium' }
+//     console.log('Request in check body middleware handler:');
+//     console.log(req.body);
+//     // { name: 'Murree Tour', duration: 35, difficulty: 'medium' }
 
-    if (!req.body.name || !req.body.duration) {
-       return res.status(400).json({
-            status: 'fail',
-            message: 'Missing name or price'
-        });
-    }
+//     if (!req.body.name || !req.body.duration) {
+//        return res.status(400).json({
+//             status: 'fail',
+//             message: 'Missing name or price'
+//         });
+//     }
 
-    next();
-};
+//     next();
+// };
 
 // 2) Route Handlers
 exports.getAllTours = (req, res) => {
@@ -79,16 +79,38 @@ exports.getTour = (req, res) => {
     // });
 };
 
-exports.createTour = (req, res) => {
+exports.createTour = async (req, res) => {
+    try {
+        const newTour = await Tour.create(req.body);
+        console.log('New Tour:');
+        console.log(newTour);
+
+        res.status(201).json({
+            status: 'success',
+            data: {
+                tour: newTour
+            }
+        });
+    } catch (err) {
+        // Validation error
+        // console.log('Error:');
+        // console.log(err);
+        // 400 error means bad request
+        res.status(400).json({
+            status: 'fail',
+            message: err
+            // message: 'Invalid data set'
+        })
+    }
     // console.log(req.body);
     // console.log(req.body.name);
 
-    res.status(201).json({
-        status: 'success',
-        // data: {
-        //     tour: newTour
-        // }
-    });
+    // const newTour = new Tour({});
+    // newTour.save();
+
+    // Call method directly on Model
+    // It returns a promise
+    // Tour.create({}).then();
 
     // // Create a new id
     // const newId = tours[tours.length - 1].id + 1;
