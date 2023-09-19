@@ -38,6 +38,7 @@ const Tour = require('./../models/tourModel');
 exports.getAllTours = async (req, res) => {
     try {
         // BUILD QUERY
+        // 1) Filtering
         // Problem
         // const queryObj = req.query;
         const queryObj = { ...req.query };
@@ -59,9 +60,24 @@ exports.getAllTours = async (req, res) => {
         // const tours = await Tour.find(req.query);
         // const tours = await Tour.find(queryObj);
 
+        // 2) Advanced filtering
+        // gte, gt, lte, lt
+        // Convert JavaScript Object to String
+        let queryStr = JSON.stringify(queryObj);
+        queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+
+        console.log('Query string:');
+        console.log(queryStr);
+
         // EXECUTE QUERY
-        const query = Tour.find(queryObj);
+        // const query = Tour.find(queryObj);
+        const query = Tour.find(JSON.parse(queryStr));
         const tours = await query;
+        // MAKING THE API BETTER ADVANCED FILTERING
+        // { difficulty: 'easy', duration: 5 }
+        // { difficulty: 'easy', duration: { $gte: 5 } }
+        // { duration: { gte: '5' }, difficulty: 'easy' }
+        // 127.0.01:8000/api/v1/tours?duration[gte]=5&difficulty=easy&page=2
 
         // Special mongoose methods
         // const tours = await Tour.find().where('duration').equals(5).where('difficulty').equals('easy');
