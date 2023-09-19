@@ -38,9 +38,10 @@ const Tour = require('./../models/tourModel');
 exports.getAllTours = async (req, res) => {
     try {
         // BUILD QUERY
-        // 1) Filtering
+        // 1A) Filtering
         // Problem
         // const queryObj = req.query;
+        // Create a shallow copy of an object
         const queryObj = { ...req.query };
         const excludedFields = ['page', 'sort', 'limit', 'fields'];
 
@@ -60,7 +61,7 @@ exports.getAllTours = async (req, res) => {
         // const tours = await Tour.find(req.query);
         // const tours = await Tour.find(queryObj);
 
-        // 2) Advanced filtering
+        // 1B) Advanced filtering
         // gte, gt, lte, lt
         // Convert JavaScript Object to String
         let queryStr = JSON.stringify(queryObj);
@@ -71,12 +72,33 @@ exports.getAllTours = async (req, res) => {
 
         // EXECUTE QUERY
         // const query = Tour.find(queryObj);
-        const query = Tour.find(JSON.parse(queryStr));
+        let query = Tour.find(JSON.parse(queryStr));
+
+        // 2) Sorting
+        // 127.0.01:8000/api/v1/tours?sort=price
+        // 127.0.01:8000/api/v1/tours?sort=-price
+        if (req.query.sort) {
+            // Chain operations
+            // Sort query
+            // query = query.sort(req.query.sort);
+            // sort('price ratingsAverage');
+            // 127.0.01:8000/api/v1/tours?sort=price,-ratingsAverage
+
+            const sortBy = req.query.sort.split(',').join(' ');
+
+            console.log('Sort by:');
+            console.log(sortBy);
+            query = query.sort(sortBy);
+        } else {
+            // Newest tour appears first
+            query = query.sort('-createdAt');
+        }
+
         const tours = await query;
         // MAKING THE API BETTER ADVANCED FILTERING
         // { difficulty: 'easy', duration: 5 }
-        // { difficulty: 'easy', duration: { $gte: 5 } }
         // { duration: { gte: '5' }, difficulty: 'easy' }
+        // { difficulty: 'easy', duration: { $gte: 5 } }
         // 127.0.01:8000/api/v1/tours?duration[gte]=5&difficulty=easy&page=2
 
         // Special mongoose methods
