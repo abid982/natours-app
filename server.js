@@ -1,16 +1,16 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+dotenv.config({ path: './config.env' });
 const app = require('./app');
 
-dotenv.config({ path: './config.env' });
 
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
 console.log('Database:');
-console.log(DB);
+// console.log(DB);
 
 mongoose.connect(DB).then((connection) => {
     console.log('DB connection successfully...');
-    console.log(connection.connections);
+    // console.log(connection.connections);
 }).catch(err => console.log(err));
 
 // const tourSchema = new mongoose.Schema({
@@ -35,10 +35,10 @@ mongoose.connect(DB).then((connection) => {
 const port = process.env.PORT || 3000;
 
 // We get the env variable
-console.log(app.get('env'));
+// console.log(app.get('env'));
 
 // Node.js environment variables
-console.log(process.env);
+// console.log(process.env);
 
 app.listen();
 

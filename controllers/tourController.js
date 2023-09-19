@@ -37,10 +37,38 @@ const Tour = require('./../models/tourModel');
 // 2) Route Handlers
 exports.getAllTours = async (req, res) => {
     try {
-        const tours = await Tour.find();
+        // BUILD QUERY
+        // Problem
+        // const queryObj = req.query;
+        const queryObj = { ...req.query };
+        const excludedFields = ['page', 'sort', 'limit', 'fields'];
+
+        excludedFields.forEach(el => delete queryObj[el]);
+
+        console.log('Request query:');
+        console.log(req.query, queryObj);
+        // { duration: '5', difficulty: 'easy' }
+        // 127.0.01:8000/api/v1/tours?duration=5&difficulty=easy&page=2
+
+        // const tours = await Tour.find();
+        // const tours = await Tour.find({
+        //     duration: 5,
+        //     difficulty: 'easy'
+        // });
+
+        // const tours = await Tour.find(req.query);
+        // const tours = await Tour.find(queryObj);
+
+        // EXECUTE QUERY
+        const query = Tour.find(queryObj);
+        const tours = await query;
+
+        // Special mongoose methods
+        // const tours = await Tour.find().where('duration').equals(5).where('difficulty').equals('easy');
         console.log('All tours:');
         console.log(tours);
 
+        // SEND RESPONSE
         // JSEND Data Specification
         res.status(200).json({
             status: 'success',

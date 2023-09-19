@@ -21,8 +21,8 @@ const app = express();
 // So calling morgan function will return a function similar to callback function in app.use((req, res, next) => { })
 // app.use(morgan('dev'));
 
-console.log('Process environment:');
-console.log(process.env.NODE_ENV);
+// console.log('Process environment:');
+// console.log(process.env.NODE_ENV);
 
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
