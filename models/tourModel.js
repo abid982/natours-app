@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const tourSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'A tour must have a number'],
+        required: [true, 'A tour must have a name'],
         unique: true
     },
     duration: {
@@ -47,7 +47,8 @@ const tourSchema = new mongoose.Schema({
     images: [String],
     createdAt: {
         type: Date,
-        default: Date.now()
+        default: Date.now(),
+        select: false
     },
     startDates: [Date]
 });

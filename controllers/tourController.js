@@ -65,14 +65,24 @@ exports.getAllTours = async (req, res) => {
         // gte, gt, lte, lt
         // Convert JavaScript Object to String
         let queryStr = JSON.stringify(queryObj);
+
+        console.log('Query string before:');
+        console.log(queryStr);
         queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
 
-        console.log('Query string:');
+        console.log('Query string after:');
         console.log(queryStr);
 
         // EXECUTE QUERY
         // const query = Tour.find(queryObj);
         let query = Tour.find(JSON.parse(queryStr));
+        // query.sort().select().skip().limit()
+
+        const testTour = await Tour.find({
+            name: "The Wine Taster"
+        });
+        console.log('Test tour:');
+        console.log(testTour);
 
         // 2) Sorting
         // 127.0.01:8000/api/v1/tours?sort=price
@@ -92,6 +102,50 @@ exports.getAllTours = async (req, res) => {
         } else {
             // Newest tour appears first
             query = query.sort('-createdAt');
+        }
+
+        // 3) Limiting fields
+        // 127.0.01:8000/api/v1/tours?fields=name,duraction,difficulty,price
+        if (req.query.fields) {
+            console.log('Request query fields:');
+            console.log(req.query.fields);
+            // { fields: 'name,duraction,difficulty,price' }
+
+            const fields = req.query.fields.split(',').join(' ');
+            // Selecting only certain field names is called projecting.
+            // query = query.select('name duration price difficulty');
+            query = query.select(fields);
+        } else {
+            // Default if user doesn't specify something
+            // Minus means excluding
+            query = query.select('-__v')
+        }
+
+        // 4) Pagination
+        // page=2&limit=10
+        // query = query.skip(10).limit(10);
+        // Page 1 --> 1 - 10 Results
+        // Page 2 --> 11 - 20 Results
+        // Page 3 --> 21 - 30 Results
+        // limit: The amount of results that we want in the query
+        // skip(): The amount of results that should be skipped before actually querying data
+        // We need some way of calculating skip value so basically based on page and the limit
+        // Get the page and the limit from the query string and we should also define some default values because we still want to have pagination even if the user doen't specify any page or any limit because for example we have a million results in our database and then of course when the user does the request we would not simply show all of the ten million results.
+
+        const page = req.query.page * 1 || 1;
+        const limit = req.query.limit * 1 || 100;
+        const skip = (page - 1) * limit;
+        // query = query.skip(10).limit(10);
+        query = query.skip(skip).limit(limit);
+
+        if (req.query.page) {
+            const numTours = await Tour.countDocuments();
+
+            console.log('Number of tours in database:');
+            console.log(numTours);
+            console.log(skip);
+
+            if (skip >= numTours) throw new Error('This page does not exist');
         }
 
         const tours = await query;
