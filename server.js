@@ -3,15 +3,20 @@ const dotenv = require('dotenv');
 dotenv.config({ path: './config.env' });
 const app = require('./app');
 
-
-const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
+const DB = process.env.DATABASE.replace(
+  '<PASSWORD>',
+  process.env.DATABASE_PASSWORD
+);
 console.log('Database:');
 // console.log(DB);
 
-mongoose.connect(DB).then((connection) => {
+mongoose
+  .connect(DB)
+  .then((connection) => {
     console.log('DB connection successfully...');
     // console.log(connection.connections);
-}).catch(err => console.log(err));
+  })
+  .catch((err) => console.log(err));
 
 // const tourSchema = new mongoose.Schema({
 //     name: String,
@@ -45,7 +50,7 @@ app.listen();
 // To start a server use app.listen() method
 // Pass port and a callback function and this callback function will be called as soon as the server starts listening
 app.listen(port, () => {
-    console.log(`App running on port ${port}...`);
+  console.log(`App running on port ${port}...`);
 });
 
 // const x = 23;

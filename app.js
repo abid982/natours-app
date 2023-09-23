@@ -48,19 +48,19 @@ app.use(express.static(`${__dirname}/public`));
 // Send a simple request to our api
 // This single middleware applies to each and every single request and that's because we didn't specify any route.
 app.use((req, res, next) => {
-    // Run code each time there is a new request
-    console.log('Hello from the middleware!');
+  // Run code each time there is a new request
+  console.log('Hello from the middleware!');
 
-    // We actually need to call the next function and if we didn't call next well then the request response cycle would really be stuck at this point. We wouldn't be ablt to move on and we would never ever send back a response to the client.
-    // Don't forget to use next in all of your middleware
-    next();
+  // We actually need to call the next function and if we didn't call next well then the request response cycle would really be stuck at this point. We wouldn't be ablt to move on and we would never ever send back a response to the client.
+  // Don't forget to use next in all of your middleware
+  next();
 });
 
 app.use((req, res, next) => {
-    req.requestTime = new Date().toISOString();
+  req.requestTime = new Date().toISOString();
 
-    // Don't forget to call the next middleware on the stack
-    next();
+  // Don't forget to call the next middleware on the stack
+  next();
 });
 
 // Creating and Mounting Multiple Routers
