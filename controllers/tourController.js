@@ -34,6 +34,20 @@ const Tour = require('./../models/tourModel');
 //     next();
 // };
 
+// Middleware function
+exports.aliasTopTours = (req, res, next) => {
+  // Manipulate query object
+  // Set property values
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+
+  console.log('Request query object in alias top tours:');
+  console.log(req.query);
+  
+  next();
+};
+
 // 2) Route Handlers
 exports.getAllTours = async (req, res) => {
   try {

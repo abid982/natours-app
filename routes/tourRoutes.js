@@ -25,6 +25,10 @@ const router = express.Router();
 // Create multiple middleware functions
 // Run a middleware before create tour to actually check the data that is coming in the body.
 // router.route('/').get(tourController.getAllTours).post(tourController.checkBody, tourController.createTour);
+
+// Run middleware before we get all tours
+router.route('/top-5-cheap').get(tourController.aliasTopTours, tourController.getAllTours);
+
 router
   .route('/')
   .get(tourController.getAllTours)
