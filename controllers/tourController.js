@@ -1,5 +1,6 @@
-const fs = require('fs');
+// const fs = require('fs');
 const Tour = require('./../models/tourModel');
+const APIFeatures = require('./../utils/apiFeatures');
 
 // Read file
 // So __dirname is the folder where the current script is located and so that is this main folder.
@@ -44,7 +45,7 @@ exports.aliasTopTours = (req, res, next) => {
 
   console.log('Request query object in alias top tours:');
   console.log(req.query);
-  
+
   next();
 };
 
@@ -56,84 +57,84 @@ exports.getAllTours = async (req, res) => {
     // Problem
     // const queryObj = req.query;
     // Create a shallow copy of an object
-    const queryObj = { ...req.query };
-    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+    // const queryObj = { ...req.query };
+    // const excludedFields = ['page', 'sort', 'limit', 'fields'];
 
-    excludedFields.forEach((el) => delete queryObj[el]);
+    // excludedFields.forEach((el) => delete queryObj[el]);
 
-    console.log('Request query:');
-    console.log(req.query, queryObj);
-    // { duration: '5', difficulty: 'easy' }
-    // 127.0.01:8000/api/v1/tours?duration=5&difficulty=easy&page=2
+    // console.log('Request query:');
+    // console.log(req.query, queryObj);
+    // // { duration: '5', difficulty: 'easy' }
+    // // 127.0.01:8000/api/v1/tours?duration=5&difficulty=easy&page=2
 
-    // const tours = await Tour.find();
-    // const tours = await Tour.find({
-    //     duration: 5,
-    //     difficulty: 'easy'
-    // });
+    // // const tours = await Tour.find();
+    // // const tours = await Tour.find({
+    // //     duration: 5,
+    // //     difficulty: 'easy'
+    // // });
 
-    // const tours = await Tour.find(req.query);
-    // const tours = await Tour.find(queryObj);
+    // // const tours = await Tour.find(req.query);
+    // // const tours = await Tour.find(queryObj);
 
-    // 1B) Advanced filtering
-    // gte, gt, lte, lt
-    // Convert JavaScript Object to String
-    let queryStr = JSON.stringify(queryObj);
+    // // 1B) Advanced filtering
+    // // gte, gt, lte, lt
+    // // Convert JavaScript Object to String
+    // let queryStr = JSON.stringify(queryObj);
 
-    console.log('Query string before:');
-    console.log(queryStr);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    // console.log('Query string before:');
+    // console.log(queryStr);
+    // queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
-    console.log('Query string after:');
-    console.log(queryStr);
+    // console.log('Query string after:');
+    // console.log(queryStr);
 
     // EXECUTE QUERY
     // const query = Tour.find(queryObj);
-    let query = Tour.find(JSON.parse(queryStr));
-    // query.sort().select().skip().limit()
+    // let query = Tour.find(JSON.parse(queryStr));
+    // // query.sort().select().skip().limit()
 
-    const testTour = await Tour.find({
-      name: 'The Wine Taster',
-    });
-    console.log('Test tour:');
-    console.log(testTour);
+    // const testTour = await Tour.find({
+    //   name: 'The Wine Taster',
+    // });
+    // console.log('Test tour:');
+    // console.log(testTour);
 
-    // 2) Sorting
-    // 127.0.01:8000/api/v1/tours?sort=price
-    // 127.0.01:8000/api/v1/tours?sort=-price
-    if (req.query.sort) {
-      // Chain operations
-      // Sort query
-      // query = query.sort(req.query.sort);
-      // sort('price ratingsAverage');
-      // 127.0.01:8000/api/v1/tours?sort=price,-ratingsAverage
+    // // 2) Sorting
+    // // 127.0.01:8000/api/v1/tours?sort=price
+    // // 127.0.01:8000/api/v1/tours?sort=-price
+    // if (req.query.sort) {
+    //   // Chain operations
+    //   // Sort query
+    //   // query = query.sort(req.query.sort);
+    //   // sort('price ratingsAverage');
+    //   // 127.0.01:8000/api/v1/tours?sort=price,-ratingsAverage
 
-      const sortBy = req.query.sort.split(',').join(' ');
+    //   const sortBy = req.query.sort.split(',').join(' ');
 
-      console.log('Sort by:');
-      console.log(sortBy);
-      query = query.sort(sortBy);
-    } else {
-      // Newest tour appears first
-      query = query.sort('-createdAt');
-    }
+    //   console.log('Sort by:');
+    //   console.log(sortBy);
+    //   query = query.sort(sortBy);
+    // } else {
+    //   // Newest tour appears first
+    //   query = query.sort('-createdAt');
+    // }
 
-    // 3) Limiting fields
-    // 127.0.01:8000/api/v1/tours?fields=name,duraction,difficulty,price
-    if (req.query.fields) {
-      console.log('Request query fields:');
-      console.log(req.query.fields);
-      // { fields: 'name,duraction,difficulty,price' }
+    // // 3) Limiting fields
+    // // 127.0.01:8000/api/v1/tours?fields=name,duraction,difficulty,price
+    // if (req.query.fields) {
+    //   console.log('Request query fields:');
+    //   console.log(req.query.fields);
+    //   // { fields: 'name,duraction,difficulty,price' }
 
-      const fields = req.query.fields.split(',').join(' ');
-      // Selecting only certain field names is called projecting.
-      // query = query.select('name duration price difficulty');
-      query = query.select(fields);
-    } else {
-      // Default if user doesn't specify something
-      // Minus means excluding
-      query = query.select('-__v');
-    }
+    //   const fields = req.query.fields.split(',').join(' ');
+    //   // Selecting only certain field names is called projecting.
+    //   // query = query.select('name duration price difficulty');
+    //   query = query.select(fields);
+    // } else {
+    //   // Default if user doesn't specify something
+    //   // Minus means excluding
+    //   query = query.select('-__v');
+    // }
 
     // 4) Pagination
     // page=2&limit=10
@@ -146,23 +147,45 @@ exports.getAllTours = async (req, res) => {
     // We need some way of calculating skip value so basically based on page and the limit
     // Get the page and the limit from the query string and we should also define some default values because we still want to have pagination even if the user doen't specify any page or any limit because for example we have a million results in our database and then of course when the user does the request we would not simply show all of the ten million results.
 
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 100;
-    const skip = (page - 1) * limit;
-    // query = query.skip(10).limit(10);
-    query = query.skip(skip).limit(limit);
+    // const page = req.query.page * 1 || 1;
+    // const limit = req.query.limit * 1 || 100;
+    // const skip = (page - 1) * limit;
+    // // query = query.skip(10).limit(10);
+    // query = query.skip(skip).limit(limit);
 
-    if (req.query.page) {
-      const numTours = await Tour.countDocuments();
+    // if (req.query.page) {
+    //   const numTours = await Tour.countDocuments();
 
-      console.log('Number of tours in database:');
-      console.log(numTours);
-      console.log(skip);
+    //   console.log('Number of tours in database:');
+    //   console.log(numTours);
+    //   console.log(skip);
 
-      if (skip >= numTours) throw new Error('This page does not exist');
-    }
+    //   if (skip >= numTours) throw new Error('This page does not exist');
+    // }
 
-    const tours = await query;
+    // Create a new object
+    // Pass query and query string
+    const features = new APIFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+    // const features = new APIFeatures(Tour.find(), req.query)
+    //   .filter()
+    //   .sort()
+    //   .limitFields()
+    //   .paginate();
+
+    console.log('Features instance:');
+    console.log(features);
+    // features.filter();
+    // Chain methods
+    // We are try to calling the sort() method on the result of this features.filter() and what is the result of this
+    // features.filter().sort().limitFields().paginate();
+
+    // const tours = await query;
+    const tours = await features.query;
+
     // MAKING THE API BETTER ADVANCED FILTERING
     // { difficulty: 'easy', duration: 5 }
     // { duration: { gte: '5' }, difficulty: 'easy' }
