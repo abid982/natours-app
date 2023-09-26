@@ -388,3 +388,58 @@ exports.deleteTour = async (req, res) => {
     });
   }
 };
+
+exports.getToursStats = async (req, res) => {
+  try {
+    // The aggregation pipeline really is a mongodb feature but mongoose of course gives us access to it so that we can use it in the mongoose driver so using our Tour model in order to access the tour collection
+    // Pass array of stages
+    // The documents then pass through these one by one step by step in the defined sequence as we define it here
+    // Stages
+    // 1. $match: The match is basically is to select or to filter certain documents. It's just like filter object in MongoDB
+    // The match stage is the preliminary stage to then prepare for the next stages.
+    // 2. $group: It allows us to group documents together basically using accumulators and an accumulator is for example even calculating an average.
+    // The _id specifies what we want to group by for now we say null here because we want to have everything in one group so that we can calculate the statistics for all of the tours together and not separated by groups. Later we will group documents together by difficulty so we can then calculate the average for the easy, medium and difficult tours.
+    // For each of the document that's going to go through this pipeline one will be added to this numTours counter
+    // 3. $sort: Which field we want to sort this by and now here in the sorting we actually need to use the field names that we specified up here in the group we can no longer use the old names because at this point they are already gone and they no longer exist.
+    // avgPrice: 1 means ascending
+    const stats = await Tour.aggregate([
+      {
+        $match: { ratingsAverage: { $gte: 4.5 } },
+      },
+      {
+        $group: {
+          // _id: null,
+          // _id: '$difficulty',
+          // _id: { $toUpper: '$ratingsAverage' },
+          _id: { $toUpper: '$difficulty' },
+          numTours: { $sum: 1 },
+          numRatings: { $sum: '$ratingsQuantity' },
+          avgRating: { $avg: '$ratingsAverage' },
+          avgPrice: { $avg: '$price' },
+          minPrice: { $min: '$price' },
+          maxPrice: { $max: '$price' },
+        },
+      },
+      {
+        $sort: { avgPrice: -1 },
+      },
+      // Repeat stages
+      // Select all the documents that are not easy
+      // {
+      //   $match: { _id: { $ne: 'EASY' } },
+      // },
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        stats,
+      },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
+};

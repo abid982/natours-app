@@ -27,7 +27,11 @@ const router = express.Router();
 // router.route('/').get(tourController.getAllTours).post(tourController.checkBody, tourController.createTour);
 
 // Run middleware before we get all tours
-router.route('/top-5-cheap').get(tourController.aliasTopTours, tourController.getAllTours);
+router
+  .route('/top-5-cheap')
+  .get(tourController.aliasTopTours, tourController.getAllTours);
+
+router.route('/tour-stats').get(tourController.getToursStats);
 
 router
   .route('/')
