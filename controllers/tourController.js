@@ -443,3 +443,93 @@ exports.getToursStats = async (req, res) => {
     });
   }
 };
+
+exports.getMonthlyPlan = async (req, res) => {
+  try {
+    console.log('Get monthly plan');
+    /*
+              {
+                "_id": "6509187f049378cf3fe034d5",
+                "name": "The Snow Adventurer",
+                "duration": 4,
+                "maxGroupSize": 10,
+                "difficulty": "difficult",
+                "ratingsAverage": 4.5,
+                "ratingsQuantity": 13,
+                "price": 997,
+                "summary": "Exciting adventure in the snow with snowboarding and skiing",
+                "description": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum!\nDolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur, exercitation ullamco laboris nisi ut aliquip. Lorem ipsum dolor sit amet, consectetur adipisicing elit!",
+                "imageCover": "tour-3-cover.jpg",
+                "images": [
+                    "tour-3-1.jpg",
+                    "tour-3-2.jpg",
+                    "tour-3-3.jpg"
+                ],
+                "startDates": [
+                    "2022-01-05T05:00:00.000Z",
+                    "2022-02-12T05:00:00.000Z",
+                    "2023-01-06T05:00:00.000Z"
+                ]
+            }
+    */
+
+    // The easiest way would basically be to have one tour for each of these dates here and we can do that using the aggregation pipeline. There is a stage for doing exactly that and that is called unwind.
+    // What unwind is gonna do is to basically deconstruct and array field from the input documents and then output one document for each element of the array so basically we want to have one tour for each of the states in the array.
+    // Select the document for the year that was passed in and remember that which stage we use for that that's right we use $match.
+    // So remember that match is basically to select documents so just to do a query.
+    // Aggregation Pipeline Operators
+
+    const year = req.params.year * 1;
+
+    const plan = await Tour.aggregate([
+      {
+        $unwind: '$startDates',
+      },
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`),
+          },
+        },
+      },
+      // Get tours by month
+      {
+        $group: {
+          _id: { $month: '$startDates' },
+          numToursStarts: { $sum: 1 },
+          tours: { $push: '$name' },
+        },
+      },
+      // Adds new fields to documents. $addFields outputs documents that contain all existing fields from the input documents and newly added fields.
+      {
+        $addFields: { month: '$_id' },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+      // Sort by the number of tours
+      {
+        $sort: { numToursStarts: -1 },
+      },
+      {
+        $limit: 12
+      }
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      results: plan.length,
+      data: {
+        plan,
+      },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
+};
