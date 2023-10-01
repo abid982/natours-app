@@ -8,6 +8,9 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A tour must have a name'],
       unique: true,
+      trim: true,
+      maxlength: [40, 'A tour name must less or equal than 40 characters'],
+      minlength: [10, 'A tour name must more or equal than 10 characters'],
     },
     slug: String,
     duration: {
@@ -21,10 +24,17 @@ const tourSchema = new mongoose.Schema(
     difficulty: {
       type: String,
       required: [true, 'A string mush have a difficulty'],
+      // The difficulty is either easy, medium or difficult and this validator is only for strings.
+      enum: {
+        values: ['easy', 'medium', 'difficult'],
+        message: 'Difficulty is either easy, medium or difficult'
+      },
     },
     ratingsAverage: {
       type: Number,
       default: 4.5,
+      min: [1, 'Rating must be above 1.0'],
+      max: [5, 'Rating mush be below 5.0'],
     },
     ratingsQuantity: {
       type: Number,
@@ -64,7 +74,7 @@ const tourSchema = new mongoose.Schema(
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  },
+  }
 );
 
 // Define virtual properties on the Tour Schema tourSchema.virtual() and then pass the name of the virtual property and then on there we need to define the get method because this virtual property here will basically be created each time that we get some data out of the database so this get function here is called a getter
