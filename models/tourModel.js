@@ -64,7 +64,7 @@ const tourSchema = new mongoose.Schema(
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
 
 // Define virtual properties on the Tour Schema tourSchema.virtual() and then pass the name of the virtual property and then on there we need to define the get method because this virtual property here will basically be created each time that we get some data out of the database so this get function here is called a getter
@@ -181,6 +181,67 @@ tourSchema.post(/^find/, function (docs, next) {
 });
 
 // Result: We're going to use a lot throughout the course because middleware is really a fundamental concept that's really important for a lot of stuff that we need in out applications.
+
+// AGGREGATION MIDDLEWARE
+// Note: The this object points to the current aggregation object
+// It's not a problem to repeat stages in aggregation pipeline.
+tourSchema.pre('aggregate', function (next) {
+  console.log('Aggregation this:');
+  console.log(this);
+  // console.log(this._pipeline);
+  console.log('Aggregation pineline method:');
+  console.log(this.pipeline());
+
+  // Add stage right at the beginning of an array
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+
+  /*
+    Aggregate {
+  _pipeline: [
+    { '$match': [Object] },
+    { '$group': [Object] },
+    { '$sort': [Object] }
+  ],
+  _model: Model { Tour },
+  options: {}
+}
+
+We have an array of all the stages
+[
+  { '$match': { ratingsAverage: [Object] } },
+  {
+    '$group': {
+      _id: [Object],
+      numTours: [Object],
+      numRatings: [Object],
+      avgRating: [Object],
+      avgPrice: [Object],
+      minPrice: [Object],
+      maxPrice: [Object]
+    }
+  },
+  { '$sort': { avgPrice: -1 } }
+]
+
+[
+  { '$match': { ratingsAverage: [Object] } },
+  {
+    '$group': {
+      _id: [Object],
+      numTours: [Object],
+      numRatings: [Object],
+      avgRating: [Object],
+      avgPrice: [Object],
+      minPrice: [Object],
+      maxPrice: [Object]
+    }
+  },
+  { '$sort': { avgPrice: -1 } }
+]
+  */
+
+  next();
+});
 
 const Tour = mongoose.model('Tour', tourSchema);
 
