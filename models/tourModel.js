@@ -55,12 +55,16 @@ const tourSchema = new mongoose.Schema(
       select: false,
     },
     startDates: [Date],
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
   //   Each time that the data is actually outputted as json we want virtuals to be true so basically the virtual to be the part of the output.
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  },
+  }
 );
 
 // Define virtual properties on the Tour Schema tourSchema.virtual() and then pass the name of the virtual property and then on there we need to define the get method because this virtual property here will basically be created each time that we get some data out of the database so this get function here is called a getter
@@ -131,6 +135,52 @@ Install slugify package
 //   console.log(document);
 //   next();
 // });
+
+// 2) QUERY MIDDLEWARE
+// We see that it looks exactly like the other middleware the other pre-hook. The only difference here is really this find hook which will make this query middleware and not document middleware.
+// The big difference here is that this keyword will now point at the current query and not at the current document because we're really processing a query.
+// We can have secret tours in our database like for tours that are only offered internally of for a very small vip group of people and the public shouldn't know about. Now since these tours are secret so we do not want the secret tours to ever appear in the result output.
+// What we're gonna to do is to create a secret tour field then query only for tours that are not secret.
+// Keep in mind that this point to a query object and so we can chain all of the methods that we have for queries and so let's simply add a find method and then basically select all the documents where the secret tour is not true
+// What happens is that we create a query using tour dot find and then of course we chain all these methods to it and then by the end we then execute that query here by using await so this is where we execute a query but before it actually is executed then our pre find middleware here is executed and it is executed because it is find query and filter our tours.
+// Rememeber that this middleware is running for find but not for findOne.
+// Let's take the id for the secret tour
+// 127.0.01:8000/api/v1/tours/651941395aa5d1bb8adff0ac
+// findById means findOne
+// this points to the query object
+// tourSchema.pre('find', function (next) {
+//   this.find({ secretTour: { $ne: true } });
+
+//   next();
+// });
+
+// There are two methods
+// 1) Use findOne pre hook
+// tourSchema.pre('findOne', function (next) {
+//   this.find({ secretTour: { $ne: true } });
+//   next();
+// });
+// 2) Use Regular Expression
+// This middleware is going to run not only find but for all the commands that start with the name find
+tourSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } });
+
+  this.start = Date.now();
+
+  next();
+});
+
+tourSchema.post(/^find/, function (docs, next) {
+  console.log('Docs:');
+  console.log(docs);
+  console.log('this post find hook:');
+  console.log(this);
+
+  console.log(`Query took ${Date.now() - this.start} milliseconds...`);
+  next();
+});
+
+// Result: We're going to use a lot throughout the course because middleware is really a fundamental concept that's really important for a lot of stuff that we need in out applications.
 
 const Tour = mongoose.model('Tour', tourSchema);
 
