@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const validator = require('validator');
 
 // We pass in not only the object with the schema definition itself but also an object for the schema options
 const tourSchema = new mongoose.Schema(
@@ -11,6 +12,7 @@ const tourSchema = new mongoose.Schema(
       trim: true,
       maxlength: [40, 'A tour name must less or equal than 40 characters'],
       minlength: [10, 'A tour name must more or equal than 10 characters'],
+      // validate: [validator.isAplha, 'Tour name must only contain characters'],
     },
     slug: String,
     duration: {
@@ -27,7 +29,7 @@ const tourSchema = new mongoose.Schema(
       // The difficulty is either easy, medium or difficult and this validator is only for strings.
       enum: {
         values: ['easy', 'medium', 'difficult'],
-        message: 'Difficulty is either easy, medium or difficult'
+        message: 'Difficulty is either easy, medium or difficult',
       },
     },
     ratingsAverage: {
@@ -44,7 +46,20 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'A tour must have a price'],
     },
-    priceDiscount: Number,
+    priceDiscount: {
+      type: Number,
+      validate: {
+        validator: function (val) {
+          // THE this KEYWORD ONLY POINTS TO THE CURRENNT DOCUMENT ON NEW DOCUMENT CREATION
+          return val < this.price;
+        },
+        message: `Dicount price ({VALUE}) should be below the regular price`,
+      },
+      // validate: function (val) {
+      //   // Retrun either true or valse
+      //   return val < this.price; // 100 < 150
+      // },
+    },
     summary: {
       type: String,
       trim: true,
