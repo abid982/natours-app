@@ -8,6 +8,10 @@ const morgan = require('morgan');
 // https://expressjs.com/en/resources/middleware.html
 // GET /api/v1/tours/ 200 13.957 ms - 8621
 
+// Import our own modules
+const AppError = require('./utils/appError');
+const ErrorHandler = require('./controllers/errorController');
+
 // Our own modules
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -98,10 +102,15 @@ app.all('*', (req, res, next) => {
   // Pass string and that string is going to be the message property
 
   // We're creating an error and then we define these status and status code properties on it so that our error handling middleware can then use them in the next step but how do we actually reach that next step so that next middleware. Well as always we use next but this time we use next in a special way because now we need to actually pass that error into next so if the next function receives an argument no matter what it is express will automatically know that there was an error so it will assume that whatever we pass into next is gonna be an error and that applies to every next function in every single middleware anywhere in our application. So again whenever we pass anything into next it will assume that it is an error and it will then skip all the middlewares in the middleware stack and send the error that we passed in to our gobal error handling middleware which will then of course be executed.
-  const err = new Error(`Can't find ${req.originalUrl}`);
-  err.statusCode = 404;
-  err.status = 'fail';
+  // const err = new Error(`Can't find ${req.originalUrl}`);
+  // err.statusCode = 404;
+  // err.status = 'fail';
 
+  // next(err);
+
+  const err = new AppError(`Can't find ${req.originalUrl}`, 404);
+  console.log('Error object from AppError Class:');
+  console.log(err);
   next(err);
 });
 
@@ -110,20 +119,27 @@ app.all('*', (req, res, next) => {
 // Expres already comes with middleware handlers out of the box
 // Define middleware function so define an error handling middleware all we need to do is to give the middleware function four arguments and express will then automatically recognize it as an error handling middleware and therefore only call it when there is an error.
 // This middleware function is an error first function
-app.use((err, req, res, next) => {
-  // Default status code if there is not exist
-  // 500 internal server error and it's a standard error
+// app.use((err, req, res, next) => {
 
-  err.statusCode = err.statusCode || 500;
-  err.status = err.status || 'error';
-  // Create an error
-  // Send back response to the client
-  // Read status code from error object
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: err.message,
-  });
-});
+//   // The error.stack will basically show us where the error happened.
+//   console.log('Error stack trace:');
+//   console.log(err.stack);
+
+//   // Default status code if there is not exist
+//   // 500 internal server error and it's a standard error
+
+//   err.statusCode = err.statusCode || 500;
+//   err.status = err.status || 'error';
+//   // Create an error
+//   // Send back response to the client
+//   // Read status code from error object
+//   res.status(err.statusCode).json({
+//     status: err.status,
+//     message: err.message,
+//   });
+// });
+
+app.use(ErrorHandler);
 
 // 3) Routes
 // app.get('/api/v1/tours', getAllTours);
