@@ -25,7 +25,7 @@ const tourSchema = new mongoose.Schema(
     },
     difficulty: {
       type: String,
-      required: [true, 'A string mush have a difficulty'],
+      required: [true, 'A string must have a difficulty'],
       // The difficulty is either easy, medium or difficult and this validator is only for strings.
       enum: {
         values: ['easy', 'medium', 'difficult'],
@@ -36,7 +36,7 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       default: 4.5,
       min: [1, 'Rating must be above 1.0'],
-      max: [5, 'Rating mush be below 5.0'],
+      max: [5, 'Rating must be below 5.0'],
     },
     ratingsQuantity: {
       type: Number,

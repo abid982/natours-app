@@ -98,7 +98,7 @@ app.all('*', (req, res, next) => {
   // });
 
   // CREATE AN ERROR
-  // Use built in Erro Constructor in order to create an error
+  // Use built in Error Constructor in order to create an error
   // Pass string and that string is going to be the message property
 
   // We're creating an error and then we define these status and status code properties on it so that our error handling middleware can then use them in the next step but how do we actually reach that next step so that next middleware. Well as always we use next but this time we use next in a special way because now we need to actually pass that error into next so if the next function receives an argument no matter what it is express will automatically know that there was an error so it will assume that whatever we pass into next is gonna be an error and that applies to every next function in every single middleware anywhere in our application. So again whenever we pass anything into next it will assume that it is an error and it will then skip all the middlewares in the middleware stack and send the error that we passed in to our gobal error handling middleware which will then of course be executed.
