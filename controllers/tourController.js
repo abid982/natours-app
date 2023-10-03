@@ -2,6 +2,7 @@
 const Tour = require('./../models/tourModel');
 const APIFeatures = require('./../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
+const AppError = require('./../utils/AppError');
 
 // Read file
 // So __dirname is the folder where the current script is located and so that is this main folder.
@@ -272,6 +273,12 @@ exports.getTour = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.id);
   // Tour.findOne({ _id: req.params.id });
 
+  // If there is no tour then call next with an error so in order to jump straight into our error handling middleware
+  // Immediatedly return because we don't want to move on to the next line
+  if (!tour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
+
   res.status(200).json({
     status: 'success',
     data: {
@@ -479,6 +486,10 @@ exports.updateTour = catchAsync(async (req, res, next) => {
   console.log('Updated tour:');
   console.log(updatedTour);
 
+  if (!updatedTour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
+
   res.status(200).json({
     status: 'success',
     data: {
@@ -537,7 +548,11 @@ exports.deleteTour = catchAsync(async (req, res, next) => {
   //     });
   // }
 
-  await Tour.findByIdAndDelete(req.params.id);
+  const tour = await Tour.findByIdAndDelete(req.params.id);
+
+  if (!tour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
 
   // 204 means no content and we usually not send any data back which means the data that we're receiving now no longer exists
   res.status(204).json({
