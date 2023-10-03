@@ -14,11 +14,11 @@ console.log(DB);
 
 mongoose
   .connect(DB)
-  .then((connection) => {
+  .then(connection => {
     console.log('DB connection successfully...');
     console.log(connection.connections);
   })
-  .catch((err) => console.log(err));
+  .catch(err => console.log(err));
 
 // READ JSON FILE
 // const tours = JSON.parse(fs.readFileSync('./tours-simple.json', 'utf-8'));

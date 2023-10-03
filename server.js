@@ -12,11 +12,11 @@ console.log('Database:');
 
 mongoose
   .connect(DB)
-  .then((connection) => {
+  .then(connection => {
     console.log('DB connection successfully...');
     // console.log(connection.connections);
   })
-  .catch((err) => console.log(err));
+  .catch(err => console.log(err));
 
 // const tourSchema = new mongoose.Schema({
 //     name: String,
