@@ -2,7 +2,7 @@
 const Tour = require('./../models/tourModel');
 const APIFeatures = require('./../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/AppError');
+const AppError = require('./../utils/appError');
 
 // Read file
 // So __dirname is the folder where the current script is located and so that is this main folder.
