@@ -25,6 +25,18 @@ const handleCastErrorDB = err => {
   return new AppError(message, 400);
 };
 
+const handleDuplicateFieldsDB = err => {
+  // Find text that is between quotes use regular expression
+  // const str = 'E11000 duplicate key error collection: natours.tours index: name_1 dup key: { name: "The Murree Hills" }';
+  // str.match(/"([^"]*)"/);
+// (2) ['"The Murree Hills"', 'The Murree Hills', index: 84, input: 'E11000 duplicate key error collection: natours.tou…dex: name_1 dup key: { name: "The Murree Hills" }', groups: undefined]
+  // const value = err.errmsg.match(/(["'])(?:(?=(\\?))\2.)*?\1/);
+  const value = err.keyValue.name;
+  const message = `Duplicate field value: ${value}. Please use another value`;
+
+  return new AppError(message, 400);
+};
+
 const sendErrorDev = (err, res) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
@@ -92,15 +104,19 @@ module.exports = (err, req, res, next) => {
     console.log('type of error object:');
     console.log(typeof err);
 
-    // if (err.name === 'CastError') {
-    //   console.log('cast error block run');
-    //   err = handleCastErrorDB(err);
-    // }
-
-    if (error.name === 'CastError') {
+    // Handling invalid database ids
+    if (err.name === 'CastError') {
       console.log('cast error block run');
-      error = handleCastErrorDB(error);
+      err = handleCastErrorDB(err);
     }
+
+    // Handling duplicated database fields
+    if (err.code === 11000) err = handleDuplicateFieldsDB(err);
+
+    // if (error.name === 'CastError') {
+    //   console.log('cast error block run');
+    //   error = handleCastErrorDB(error);
+    // }
 
     // console.log('Error in error controller for testing:');
     // console.log(error);
@@ -113,13 +129,13 @@ module.exports = (err, req, res, next) => {
     console.log('type of cast error');
     console.log(typeof err.name);
 
-    // sendErrorProd(err, res);
-    sendErrorProd(error, res);
+    sendErrorProd(err, res);
+    // sendErrorProd(error, res);
     // res.status(400).json({
-    //   status: error.status,
-    //   error: error,
-    //   message: error.message,
-    //   stack: error.stack,
+    //   status: err,
+    //   error: err,
+    //   message: err.message,
+    //   stack: err.stack,
     // });
 
     /*
