@@ -29,10 +29,87 @@ const handleDuplicateFieldsDB = err => {
   // Find text that is between quotes use regular expression
   // const str = 'E11000 duplicate key error collection: natours.tours index: name_1 dup key: { name: "The Murree Hills" }';
   // str.match(/"([^"]*)"/);
-// (2) ['"The Murree Hills"', 'The Murree Hills', index: 84, input: 'E11000 duplicate key error collection: natours.tou…dex: name_1 dup key: { name: "The Murree Hills" }', groups: undefined]
+  // (2) ['"The Murree Hills"', 'The Murree Hills', index: 84, input: 'E11000 duplicate key error collection: natours.tou…dex: name_1 dup key: { name: "The Murree Hills" }', groups: undefined]
   // const value = err.errmsg.match(/(["'])(?:(?=(\\?))\2.)*?\1/);
   const value = err.keyValue.name;
   const message = `Duplicate field value: ${value}. Please use another value`;
+
+  return new AppError(message, 400);
+};
+
+const handleValidationError = err => {
+  // Now in order to create one big string out of all the strings from all the errors we basically have to loop over all of these object and then extract all the error messages into a new array.
+
+  /*
+    {
+    "status": "error",
+    "error": {
+        "errors": {
+            "name": {
+                "name": "ValidatorError",
+                "message": "A tour name must more or equal than 10 characters",
+                "properties": {
+                    "message": "A tour name must more or equal than 10 characters",
+                    "type": "minlength",
+                    "minlength": 10,
+                    "path": "name",
+                    "value": "short"
+                },
+                "kind": "minlength",
+                "path": "name",
+                "value": "short"
+            },
+            "difficulty": {
+                "name": "ValidatorError",
+                "message": "Difficulty is either easy, medium or difficult",
+                "properties": {
+                    "message": "Difficulty is either easy, medium or difficult",
+                    "type": "enum",
+                    "enumValues": [
+                        "easy",
+                        "medium",
+                        "difficult"
+                    ],
+                    "path": "difficulty",
+                    "value": "bla bla bla"
+                },
+                "kind": "enum",
+                "path": "difficulty",
+                "value": "bla bla bla"
+            },
+            "ratingsAverage": {
+                "name": "ValidatorError",
+                "message": "Rating must be below 5.0",
+                "properties": {
+                    "message": "Rating must be below 5.0",
+                    "type": "max",
+                    "max": 5,
+                    "path": "ratingsAverage",
+                    "value": 6
+                },
+                "kind": "max",
+                "path": "ratingsAverage",
+                "value": 6
+            }
+        },
+        "_message": "Validation failed",
+        "statusCode": 500,
+        "status": "error",
+        "name": "ValidationError",
+        "message": "Validation failed: name: A tour name must more or equal than 10 characters, difficulty: Difficulty is either easy, medium or difficult, ratingsAverage: Rating must be below 5.0"
+    },
+    "message": "Validation failed: name: A tour name must more or equal than 10 characters, difficulty: Difficulty is either easy, medium or difficult, ratingsAverage: Rating must be below 5.0",
+    "stack": "ValidationError: Validation failed: name: A tour name must more or equal than 10 characters, difficulty: Difficulty is either easy, medium or difficult, ratingsAverage: Rating must be below 5.0\n    at _done (/Users/abid/Documents/Node.js, Express, MongoDB & More The Complete Bootcamp 2023/natours-app/node_modules/mongoose/lib/helpers/updateValidators.js:228:19)\n    at /Users/abid/Documents/Node.js, Express, MongoDB & More The Complete Bootcamp 2023/natours-app/node_modules/mongoose/lib/helpers/updateValidators.js:204:11\n    at schemaPath.doValidate.updateValidator (/Users/abid/Documents/Node.js, Express, MongoDB & More The Complete Bootcamp 2023/natours-app/node_modules/mongoose/lib/helpers/updateValidators.js:162:13)\n    at /Users/abid/Documents/Node.js, Express, MongoDB & More The Complete Bootcamp 2023/natours-app/node_modules/mongoose/lib/schematype.js:1368:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)"
+}
+  */
+
+  // Loop through errors object
+  // err.errors
+  const errors = Object.values(err.errors).map(el => el.message);
+  console.log('testing...');
+  console.log(errors);
+
+  const message = `Invalid input data. ${errors.join('. ')}`;
 
   return new AppError(message, 400);
 };
@@ -92,7 +169,7 @@ module.exports = (err, req, res, next) => {
 
     // let error = { ...err };
 
-    let error = JSON.parse(JSON.stringify(err));
+    // let error = JSON.parse(JSON.stringify(err));
 
     // console.log('Errrror:');
     // console.log(err);
@@ -121,6 +198,8 @@ module.exports = (err, req, res, next) => {
     // console.log('Error in error controller for testing:');
     // console.log(error);
     // console.log(error.isOperational);
+
+    if (err.name === 'ValidationError') err = handleValidationError(err);
 
     console.log('error in production:');
     console.log(err);
