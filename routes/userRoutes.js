@@ -1,8 +1,14 @@
 const express = require('express');
-const userController = require('./../controllers/userController');
+const userController = require('../controllers/userController');
+const authController = require('../controllers/authController');
 
 const router = express.Router();
 
+// Sepcial authentication route
+// The signup route is a special kind of endpoint. It doesn't fit the rest architecture that we talked about before.
+router.post('/signup', authController.signup);
+
+// For administration
 router
   .route('/')
   .get(userController.getAllUsers)

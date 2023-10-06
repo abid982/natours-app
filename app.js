@@ -55,8 +55,8 @@ app.use((req, res, next) => {
   // Run code each time there is a new request
   console.log('Hello from the middleware!');
 
-  console.log('Programming error which is non-operational:');
-  console.log(x);
+  // console.log('Programming error which is non-operational:');
+  // console.log(x);
 
   // We actually need to call the next function and if we didn't call next well then the request response cycle would really be stuck at this point. We wouldn't be ablt to move on and we would never ever send back a response to the client.
   // Don't forget to use next in all of your middleware
