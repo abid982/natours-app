@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a password'],
     minlength: 8,
+    select: false,
   },
   passwordConfirm: {
     type: String,
@@ -94,6 +95,20 @@ userSchema.pre('save', async function (next) {
   // We of course need to call the next middleware
   next();
 });
+
+// Check if the given password is the same as the one that is stored in the document.
+// Create an instance method so the instance method is basically a method that's gonna be available on all documents of collection
+// This function accepts a candidata password so the password that the user passes in the body and then also the user password.
+// Call this function in the authController.
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword,
+) {
+  // The this keyworkd points to the current document but in this case since we have password select to false so this.password will not be available.
+  // The goal of this function is to return true or false.
+  // return candidatePassword === userPassword;
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
 
 // Create model out of schema
 const User = mongoose.model('User', userSchema);

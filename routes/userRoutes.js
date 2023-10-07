@@ -7,6 +7,7 @@ const router = express.Router();
 // Sepcial authentication route
 // The signup route is a special kind of endpoint. It doesn't fit the rest architecture that we talked about before.
 router.post('/signup', authController.signup);
+router.post('/login', authController.login);
 
 // For administration
 router
