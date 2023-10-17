@@ -2,6 +2,7 @@
 const express = require('express');
 
 const tourController = require('./../controllers/tourController');
+const authController = require('./../controllers/authController');
 
 const router = express.Router();
 
@@ -34,9 +35,12 @@ router
 router.route('/tour-stats').get(tourController.getToursStats);
 router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 
+// Protect tour routes
+// This middleware function protect runs first and then getAllTours and this middleware will then either return an error if the user is not authenticated so if he's not logged in, or it will call the next middleware which is in this case the getAllTours handler and that then effectively protects this route from unauthorized access.
+// In auth controller create a new middleware function
 router
   .route('/')
-  .get(tourController.getAllTours)
+  .get(authController.protect, tourController.getAllTours)
   .post(tourController.createTour);
 
 router

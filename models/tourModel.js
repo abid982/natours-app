@@ -89,7 +89,7 @@ const tourSchema = new mongoose.Schema(
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
 
 // Define virtual properties on the Tour Schema tourSchema.virtual() and then pass the name of the virtual property and then on there we need to define the get method because this virtual property here will basically be created each time that we get some data out of the database so this get function here is called a getter
@@ -110,7 +110,7 @@ tourSchema.virtual('durationWeeks').get(function () {
 // Create a new document using our API in order to trigger this document middleware
 // Call next middleware
 tourSchema.pre('save', function (next) {
-  console.log('Document pre middleware:');
+  // console.log('Document pre middleware:');
   // Currently processed document that is being saved
   // This is what our document is looking like right before it's saved into the database
   /*
@@ -136,7 +136,7 @@ tourSchema.pre('save', function (next) {
 At this point we still act on the data before it then saved to the database and that's exactly what we're going to do now. What we want to do here is to create a slug for each of these documents.
 Install slugify package
   */
-  console.log(this);
+  // console.log(this);
   // Define a new property on currently processed document
   // Note: Define slug in Schema first otherwise it's not going to be persisted in the database.
   this.slug = slugify(this.name, { lower: true });
@@ -196,12 +196,12 @@ tourSchema.pre(/^find/, function (next) {
 });
 
 tourSchema.post(/^find/, function (docs, next) {
-  console.log('Docs:');
-  console.log(docs);
-  console.log('this post find hook:');
-  console.log(this);
+  // console.log('Docs:');
+  // console.log(docs);
+  // console.log('this post find hook:');
+  // console.log(this);
 
-  console.log(`Query took ${Date.now() - this.start} milliseconds...`);
+  // console.log(`Query took ${Date.now() - this.start} milliseconds...`);
   next();
 });
 
@@ -211,11 +211,11 @@ tourSchema.post(/^find/, function (docs, next) {
 // Note: The this object points to the current aggregation object
 // It's not a problem to repeat stages in aggregation pipeline.
 tourSchema.pre('aggregate', function (next) {
-  console.log('Aggregation this:');
-  console.log(this);
+  // console.log('Aggregation this:');
+  // console.log(this);
   // console.log(this._pipeline);
-  console.log('Aggregation pineline method:');
-  console.log(this.pipeline());
+  // console.log('Aggregation pineline method:');
+  // console.log(this.pipeline());
 
   // Add stage right at the beginning of an array
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });

@@ -54,6 +54,11 @@ const userSchema = new mongoose.Schema({
       message: 'Passwords are not the same',
     },
   },
+  // This password changed property will always be changed of course when someone changed a password so right now we don't have that logic anywhere and so nowhere we are actually defining this property.
+  passwordChangedAt: {
+    type: Date,
+    required: false,
+  },
 });
 
 // In fact we can also use User.save() in order to update the user
@@ -105,9 +110,40 @@ userSchema.methods.correctPassword = async function (
   userPassword,
 ) {
   // The this keyworkd points to the current document but in this case since we have password select to false so this.password will not be available.
-  // The goal of this function is to return true or false.
-  // return candidatePassword === userPassword;
+  // The goal of this functionWhere in bed didn't ththe balance a minute but I've is to return true or false.
+  // return caWhere in bed didn't take any of the balance a minute but I've got andidatePassword === userPassword;
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+// In this function we will pass the jwt timestamp so basically the timestamp which says when the token was issued.
+userSchema.methods.changedPasswordAfter = function (jwtTimestamp) {
+  console.log('jwt password changed after:');
+  // By default we will return false and that means the user has not changed his password after the token was issued.
+  // In the instance method the this keyword always points to the current document and so therefore here we have access to the properties.
+  console.log(this);
+  console.log(this.passwordChangedAt);
+  console.log(jwtTimestamp);
+  // Now we actually need to create a field in our schema for that date where the password has been changed
+  // Later in this section when we will implemnt the logic for chaning the password is when we will then set this property but now we will artificially basically set it here when we create a new user.
+  // Create a user which has this property on it.
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10,
+    );
+
+    // console.log(jwtTimestamp, this.passwordChangedAt);
+    console.log(changedTimestamp, jwtTimestamp);
+
+    // Return our result
+    // The date or the time at which the token was issued is less than changed timestamp
+    return jwtTimestamp < changedTimestamp;
+    // Example: Let's say the token was issued at 100 but we changed the password let's say at time 200 and so we changed the password after the token was issued and so therefore this is now true and that's exactly what we want to return here because false means not changed and true of course means changed.
+  }
+
+  // By default the user has never actually changed the password
+  // False means NOT changed
+  return false;
 };
 
 // Create model out of schema

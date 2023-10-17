@@ -24,15 +24,15 @@ class APIFeatures {
     // console.log(req.query, queryObj);
     let queryStr = JSON.stringify(queryObj);
 
-    console.log('Query string before:');
-    console.log(queryStr);
+    // console.log('Query string before:');
+    // console.log(queryStr);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
 
-    console.log('Query string after:');
-    console.log(queryStr);
+    // console.log('Query string after:');
+    // console.log(queryStr);
 
-    console.log('this query:');
-    console.log(this.query);
+    // console.log('this query:');
+    // console.log(this.query);
 
     // EXECUTE QUERY
     // const query = Tour.find(queryObj);
@@ -57,8 +57,8 @@ class APIFeatures {
     // 127.0.01:8000/api/v1/tours?sort=price
     // 127.0.01:8000/api/v1/tours?sort=-price
 
-    console.log('Query string sort:');
-    console.log(this.queryString);
+    // console.log('Query string sort:');
+    // console.log(this.queryString);
 
     if (this.queryString.sort) {
       // Chain operations
@@ -69,8 +69,8 @@ class APIFeatures {
 
       const sortBy = this.queryString.sort.split(',').join(' ');
 
-      console.log('Sort by:');
-      console.log(sortBy);
+      // console.log('Sort by:');
+      // console.log(sortBy);
       this.query = this.query.sort(sortBy);
     } else {
       // Newest tour appears first
@@ -84,8 +84,8 @@ class APIFeatures {
     // 3) Limiting fields
     // 127.0.01:8000/api/v1/tours?fields=name,duraction,difficulty,price
     if (this.queryString.fields) {
-      console.log('Request query fields:');
-      console.log(this.queryString.fields);
+      // console.log('Request query fields:');
+      // console.log(this.queryString.fields);
       // { fields: 'name,duraction,difficulty,price' }
 
       const fields = this.queryString.fields.split(',').join(' ');

@@ -55,6 +55,11 @@ app.use((req, res, next) => {
   // Run code each time there is a new request
   console.log('Hello from the middleware!');
 
+  console.log('Request headers:');
+
+  // We can access headers in express so the ones that a client can send along with their request
+  console.log(req.headers);
+
   // console.log('Programming error which is non-operational:');
   // console.log(x);
 
@@ -112,8 +117,8 @@ app.all('*', (req, res, next) => {
   // next(err);
 
   const err = new AppError(`Can't find ${req.originalUrl}`, 404);
-  console.log('Error object from AppError Class:');
-  console.log(err);
+  // console.log('Error object from AppError Class:');
+  // console.log(err);
   next(err);
 });
 

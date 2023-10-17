@@ -45,14 +45,17 @@ exports.aliasTopTours = (req, res, next) => {
   req.query.sort = '-ratingsAverage,price';
   req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
 
-  console.log('Request query object in alias top tours:');
-  console.log(req.query);
+  // console.log('Request query object in alias top tours:');
+  // console.log(req.query);
 
   next();
 };
 
 // 2) Route Handlers
 exports.getAllTours = catchAsync(async (req, res, next) => {
+
+  // console.log('Req headers:');
+  // console.log(req.headers);
   // Create a new object
   // Pass query and query string
   const features = new APIFeatures(Tour.find(), req.query)
@@ -66,8 +69,8 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
   //   .limitFields()
   //   .paginate();
 
-  console.log('Features instance:');
-  console.log(features);
+  // console.log('Features instance:');
+  // console.log(features);
   // features.filter();
   // Chain methods
   // We are try to calling the sort() method on the result of this features.filter() and what is the result of this
@@ -84,8 +87,8 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
   // Special mongoose methods
   // const tours = await Tour.find().where('duration').equals(5).where('difficulty').equals('easy');
-  console.log('All tours:');
-  console.log(tours);
+  // console.log('All tours:');
+  // console.log(tours);
 
   // SEND RESPONSE
   // JSEND Data Specification
@@ -359,8 +362,8 @@ exports.getTour = catchAsync(async (req, res, next) => {
 
 exports.createTour = catchAsync(async (req, res, next) => {
   const newTour = await Tour.create(req.body);
-  console.log('New Tour:');
-  console.log(newTour);
+  // console.log('New Tour:');
+  // console.log(newTour);
 
   // We no longer need the try catch block because that catch is now basically transferred to fn(req, res, next).catch(err => next(err)); It's no longer a catch block because in here it's just easier to use the promise that the fn function return.
 
@@ -469,8 +472,8 @@ exports.createTour = catchAsync(async (req, res, next) => {
 // };
 
 exports.updateTour = catchAsync(async (req, res, next) => {
-  console.log('Request body:');
-  console.log(req.body);
+  // console.log('Request body:');
+  // console.log(req.body);
 
   // Query document that we want to update
   //     await Tour.findByIdAndUpdte({
@@ -483,8 +486,8 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     runValidators: true,
   });
 
-  console.log('Updated tour:');
-  console.log(updatedTour);
+  // console.log('Updated tour:');
+  // console.log(updatedTour);
 
   if (!updatedTour) {
     return next(new AppError('No tour found with that ID', 404));
@@ -679,7 +682,7 @@ exports.getToursStats = catchAsync(async (req, res, next) => {
 // };
 
 exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
-  console.log('Get monthly plan');
+  // console.log('Get monthly plan');
   const year = req.params.year * 1;
 
   const plan = await Tour.aggregate([

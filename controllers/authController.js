@@ -1,3 +1,5 @@
+// const util = require('util');
+const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 
 const User = require('./../models/userModel');
@@ -14,19 +16,33 @@ const signToken = payload =>
 // Implement a route so that signup handler here then can get called.
 exports.signup = catchAsync(async (req, res, next) => {
   console.log('Signup:');
-  console.log(req);
+  console.log(req.body);
   // Create new document based on model
   // const newUser = await User.create(req.body);
 
   // For security reasons
   // If a new user try to input to manually input a role we will not store that into the new user.
   // We can no longer register as an admin and so if we need to add a new administrator to our system we can then very simply create a new user normally and then go into the mongodb compass and basically added that role in there of course we could create a new route.
+  // const newUser = await User.create({
+  //   name: req.body.name,
+  //   email: req.body.email,
+  //   password: req.body.password,
+  //   passwordConfirm: req.body.passwordConfirm,
+  //   passowrdChangedAt: req.body.passwordChangedAt,
+  // });
+
+  // const newUser = await User.create(req.body);
+
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
+    passwordChangedAt: req.body.passwordChangedAt,
   });
+
+  console.log('New user...');
+  console.log(newUser);
 
   // Logged the new user in as soon as he signed up
   // Sign a json web token then send it back to the user.
@@ -126,4 +142,152 @@ exports.login = catchAsync(async (req, res, next) => {
     status: 'success',
     token,
   });
+});
+
+// Function to protect route
+exports.protect = catchAsync(async (req, res, next) => {
+  // Lining out a couple of steps
+
+  let token;
+
+  // 1) Get token and check if it's exist
+  // A common practice is to send a token using an http header with the request so let's take a look at how we can set headers in postman to send them along with a request and then also how we can get acess to these headers in express.
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    // const token = req.headers.authorization.split(' ')[1];
+    // Note: let and const are block scoped
+    token = req.headers.authorization.split(' ')[1];
+
+    // console.log('Real token:');
+    // console.log(token);
+  }
+
+  // If there is no token then the user not logged in and create an error
+  // The status code 401 means unauthorized
+  if (!token) {
+    return next(
+      new AppError(
+        'You are not logged in! Please log in to get access...',
+        401,
+      ),
+    );
+  }
+
+  // 2) Verify token
+  // Validate token
+  // The jwt algorithm verifies if the signature is valid or if it's not
+  // In this step we verify that someone manipulate the data or also if the token has already expired.
+  // So we already use the jwt web token package the sign function and now we're gonna use the verify function
+  // Pass token in verify function so that the algorithm can read the payload and this step also needs the secret so basically in order to create the test signature.
+  // The third argument is a callback function and this callback function run as soon as the verification has been completed.
+  // The verify() function is an asynchronous function so it will verify the token and after that when it's done it will call the function that we can specify.
+  // We're actually promisifying this function so basically to make it return a promise right and so in that way we can then use async await just like any other async function that we have been using and for that node actually has a built in promisify function.
+  // Require built in util module or package and on that we can use the promisify method
+  // We actually promisfy the function await promisify(jwt.verify) and call the function (token, process.env.JWT_SECRET) and it will return a promise and store the result into a variable. The resolved value of the promise is actually a decoded data or decoded payload from this JSON WEB TOKEN and the decoded payload should be the user id.
+  // jwt.verify(token, process.env.JWT_SECRET, )
+  /*
+  {
+    "status": "error",
+    "error": {
+        "name": "TokenExpiredError",
+        "message": "jwt expired",
+        "expiredAt": "2023-10-08T15:11:03.000Z",
+        "statusCode": 500,
+        "status": "error"
+    },
+    "message": "jwt expired",
+    "stack": "TokenExpiredError: jwt expired\n    at /Users/abid/Documents/Node.js, Express, MongoDB & More The Complete Bootcamp 2023/natours-app/node_modules/jsonwebtoken/verify.js:190:21\n    at getSecret (/Users/abid/Documents/Node.js, Express, MongoDB & More The Complete Bootcamp 2023/natours-app/node_modules/jsonwebtoken/verify.js:97:14)\n    at module.exports (/Users/abid/Documents/Node.js, Express, MongoDB & More The Complete Bootcamp 2023/natours-app/node_modules/jsonwebtoken/verify.js:101:10)\n    at node:internal/util:375:7\n    at new Promise (<anonymous>)\n    at node:internal/util:361:12\n    at /Users/abid/Documents/Node.js, Express, MongoDB & More The Complete Bootcamp 2023/natours-app/controllers/authController.js:177:46\n    at /Users/abid/Documents/Node.js, Express, MongoDB & More The Complete Bootcamp 2023/natours-app/utils/catchAsync.js:12:3\n    at Layer.handle [as handle_request] (/Users/abid/Documents/Node.js, Express, MongoDB & More The Complete Bootcamp 2023/natours-app/node_modules/express/lib/router/layer.js:95:5)\n    at next (/Users/abid/Documents/Node.js, Express, MongoDB & More The Complete Bootcamp 2023/natours-app/node_modules/express/lib/router/route.js:144:13)"
+}
+  */
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+  // console.log('Decoded data:');
+  // console.log(decoded);
+
+  // Let's try to access the application with already expired token
+  // Change token expiration time let's say 5s
+
+  // Handle this JSONWEBTOKENERROR
+  // Solution: try catch block but instead use global error handling middleware
+  /*
+  {
+    "status": "error",
+    "error": {
+        "name": "JsonWebTokenError",
+        "message": "invalid signature",
+        "statusCode": 500,
+        "status": "error"
+    },
+    "message": "invalid signature"
+  */
+
+  // The token is only for 5s
+  /*
+    {
+    "status": "error",
+    "error": {
+        "name": "TokenExpiredError",
+        "message": "jwt expired",
+        "expiredAt": "2023-10-16T10:20:28.000Z",
+        "statusCode": 500,
+        "status": "error"
+    },
+    "message": "jwt expired"
+    }
+  */
+
+  /*
+  { id: '652d08bbddfbc8a1b4959be6', iat: 1697450171, exp: 1697536571 }
+  */
+
+  // Let's actually try to manipulate the payload of this token
+  // https://jwt.io/
+  // Change payload
+  // eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1MmQwOGJiZGRmYmM4YTFiNDk1OWJhNyIsImlhdCI6MTY5NzQ1MDE3MSwiZXhwIjoxNjk3NTM2NTcxfQ.3qdaWBMXzBEvj1mGBFnae46Hpuvs4LH36nB8My77zyg
+
+  // If the verification was actually successful then we also need to check if the user who's trying to access the route still exist
+  // If the user has been deleted in the meantime so the token will exist but if the user is no longer existent well then we actually don't want to log him in right or even worse what if the user has actually changed his password after the token has been issued. In that case the old stolen token should no longer be valid so it should not be accepted to access protected routes.
+  // 3) Check if user still exists
+  // Id in payload and query user with id
+  const currentUser = await User.findById(decoded.id);
+
+  console.log('Current user:');
+  console.log(currentUser);
+
+  if (!currentUser)
+    return next(
+      new AppError(
+        'The user belonging to this token does no longer exist',
+        401,
+      ),
+    );
+
+  // 4) Check if user changed password after the jwt or token was issued
+  // To implement this test we will actually create another instance method so basically a method that is going to be available on all the documents and we do this because it's a quite a lot of code that we need for this verification.
+
+  // Call an instance method on the user document
+  // issued at
+  // console.log('issued at:');
+  // currentUser.changedPasswordAfter(decoded.iat);
+
+  // If the password was actually changed well in this case we actually want an error
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError(
+        'User recently changed the password. Please login again',
+        401,
+      ),
+    );
+  }
+
+  // Put the entire user data on the request
+  req.user = currentUser;
+
+  // So only if there was no problems in any of these steps here only then of course next will be called which will then get access to the route that we protected so in our current example getAllTours handler.
+
+  // GRANT ACCESS TO THE PROTECTED ROUTE
+  next();
 });
