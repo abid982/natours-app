@@ -25,7 +25,7 @@ const tourSchema = new mongoose.Schema(
     },
     difficulty: {
       type: String,
-      required: [true, 'A string must have a difficulty'],
+      required: [true, 'A tour must have a difficulty'],
       // The difficulty is either easy, medium or difficult and this validator is only for strings.
       enum: {
         values: ['easy', 'medium', 'difficult'],

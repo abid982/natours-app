@@ -28,6 +28,14 @@ const userSchema = new mongoose.Schema({
   },
   // If the user wants to upload a photo then that will be stored somewhere in our file system and the path to that photo will then be stored into this photo field.
   photo: String,
+  role: {
+    type: String,
+    enum: ['user', 'guide', 'lead-guide', 'administrator', 'admin'],
+    // In order to allow only a certain type of roles to be spcified
+    // These user roles are specific to applications domain for example if we want to run a commmunity site then it gonna not make much sense. You probably have moderators, contributors or members etc.
+    // Different names depending upon type of application
+    default: 'user', // Default is normal user if not specified role field
+  },
   password: {
     type: String,
     required: [true, 'Please provide a password'],

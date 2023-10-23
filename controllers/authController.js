@@ -39,6 +39,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
+    role: req.body.role,
   });
 
   console.log('New user...');
@@ -291,3 +292,23 @@ exports.protect = catchAsync(async (req, res, next) => {
   // GRANT ACCESS TO THE PROTECTED ROUTE
   next();
 });
+
+// How are we actually going to implement this because usually we cannot pass arguments into a middleware function right butin this case we really want to. We want to pass in the roles who are allowed to access the resource right so in thiscase the admin and the lead guide. We need a way of basically passing in arguments into the middleware function in a way that usually doesn't work so how are we going to do that. Well in here we will actually create like a wrapper function which will then return a middleware function that we actually want to create.
+// We want to pass an arbitrary number of arguments and so we can use the rest parameter syntax and this will then create an array of all the arguments that were specified.
+// We are creating this function and right away we will the return a new function and this is the middleware function itself.
+// This function will then basically get access to this roles parameter because there is a closure.
+// 403 forbidden
+
+exports.restrictTo =
+  (...roles) =>
+  (req, res, next) => {
+    // roles ['admin', 'lead-guide'], role='user'
+
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403),
+      );
+    }
+
+    next();
+  };
