@@ -1,3 +1,4 @@
+const { randomBytes, createHash } = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
@@ -67,6 +68,9 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: false,
   },
+  passwordResetToken: String,
+  // Note: The password reset token will actually expire after a certain amount of time as a security measure for example 10 minutes.
+  passwordResetExpires: Date,
 });
 
 // In fact we can also use User.save() in order to update the user
@@ -152,6 +156,33 @@ userSchema.methods.changedPasswordAfter = function (jwtTimestamp) {
   // By default the user has never actually changed the password
   // False means NOT changed
   return false;
+};
+
+// Instance method to create password reset token
+// The password reset token should basically be a random string but at the same time it doesn't need to be as cryptographically strong as the password hash.
+// We can just use the very simple random byter function from the built-in croypto node module
+userSchema.methods.createPasswordResetToken = function () {
+  // Generate token
+  // This token is what we're going to send to the user so it's like a reset password really that the user can then use to create a new real password and of course only the user will have access to this token ans so in fact it really behaves kind of like a password ans so since essentially it is just a password it means if a hacker can get access to our database well that' gonna allow the hacker to gain access to the account by setting a new password so we should never store a plain reset token in the database ans so let's actually encrypt it. We're going to use the built-in crypto module.
+
+  // Where we're going to save this reset token? Well we're going to create a new field in our database schema so that we can compare it with the token that the user provides.
+  const resetToken = randomBytes(32).toString('hex');
+
+  // Save encrypted password reset token to the database
+  this.passwordResetToken = createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // We just modified the data
+  // When we set this dot passwordResetExpires for example we did in fact not really update the document we did not save it.
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  // Then we also want to return the plain text token becuase that's actually the one that we're going to send through the email.
+
+  // Testing
+  console.log({ resetToken }, this.passwordResetToken);
+
+  return resetToken;
 };
 
 // Create model out of schema

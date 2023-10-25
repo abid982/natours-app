@@ -312,3 +312,33 @@ exports.restrictTo =
 
     next();
   };
+
+// 404 error not found
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // 1) Get user based on POSTed email
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user) next(new AppError('There is no user with email address', 404));
+
+  // // 2) Generate the random reset token
+  // // To create a random token we're actually going to create an instance method on the User becuase this really has to do with the user data itself.
+  const resetToken = user.createPasswordResetToken();
+
+  await user.save({ validateBeforeSave: false });
+
+  // 3) Send it to user's email
+
+  res.status(200).json({
+    resetToken,
+  });
+
+  next();
+});
+
+exports.resetPassword = async (req, res, next) => {
+  res.status(200).json({
+    success: true,
+  });
+
+  next();
+};
