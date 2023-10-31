@@ -113,17 +113,26 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+// Now when do we actually want to set the passwordChangedAt property to right now? Well we only want it when we modified the password property.
+userSchema.pre('save', function (next) {
+  // If we didn't modify the password property then we not to manipulate the password change at. But what about creating new document. Well when we create a new document then we did actully modify the password and we set the password changed at property.
+  // If the document is new
+  if (!this.isModified('password') || this.isNew) return next();
+
+  this.passwordChangedAt = Date.now() - 1000;
+
+  next();
+});
+
 // Check if the given password is the same as the one that is stored in the document.
 // Create an instance method so the instance method is basically a method that's gonna be available on all documents of collection
-// This function accepts a candidata password so the password that the user passes in the body and then also the user password.
+// This function accepts a candidate password so the password that the user passes in the body and then also the user password.
 // Call this function in the authController.
 userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword,
 ) {
   // The this keyworkd points to the current document but in this case since we have password select to false so this.password will not be available.
-  // The goal of this functionWhere in bed didn't ththe balance a minute but I've is to return true or false.
-  // return caWhere in bed didn't take any of the balance a minute but I've got andidatePassword === userPassword;
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
@@ -160,13 +169,16 @@ userSchema.methods.changedPasswordAfter = function (jwtTimestamp) {
 
 // Instance method to create password reset token
 // The password reset token should basically be a random string but at the same time it doesn't need to be as cryptographically strong as the password hash.
-// We can just use the very simple random byter function from the built-in croypto node module
+// We can just use the very simple random bytes function from the built-in croypto node module
 userSchema.methods.createPasswordResetToken = function () {
   // Generate token
-  // This token is what we're going to send to the user so it's like a reset password really that the user can then use to create a new real password and of course only the user will have access to this token ans so in fact it really behaves kind of like a password ans so since essentially it is just a password it means if a hacker can get access to our database well that' gonna allow the hacker to gain access to the account by setting a new password so we should never store a plain reset token in the database ans so let's actually encrypt it. We're going to use the built-in crypto module.
+  // This token is what we're going to send to the user so it's like a reset password really that the user can then use to create a new real password and of course only the user will have access to this token ans so in fact it really behaves kind of like a password ans so since essentially it is just a password it means if a hacker can get access to our database well that's gonna allow the hacker to gain access to the account by setting a new password so we should never store a plain reset token in the database ans so let's actually encrypt it. We're going to use the built-in crypto module.
 
   // Where we're going to save this reset token? Well we're going to create a new field in our database schema so that we can compare it with the token that the user provides.
   const resetToken = randomBytes(32).toString('hex');
+
+  console.log('Reset token:');
+  console.log(resetToken);
 
   // Save encrypted password reset token to the database
   this.passwordResetToken = createHash('sha256')

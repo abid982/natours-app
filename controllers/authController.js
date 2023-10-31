@@ -1,3 +1,4 @@
+const { randomBytes, createHash } = require('crypto');
 // const util = require('util');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
@@ -5,12 +6,29 @@ const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const sendEmail = require('./../utils/email');
 
-//
 const signToken = payload =>
   jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
+
+const createSendToken = (user, statusCode, res) => {
+  const payload = { id: user._id };
+
+  const token = signToken(payload);
+
+  console.log('Token sign in:');
+  console.log(token);
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
+  });
+};
 
 // Create and export our very first controller and that is signup
 // Implement a route so that signup handler here then can get called.
@@ -55,31 +73,33 @@ exports.signup = catchAsync(async (req, res, next) => {
   // Pass options
   // When JWT Expires
 
-  // WE JUST CREATE A NEW TOKEN
-  const payload = { id: newUser.id };
+  // // WE JUST CREATE A NEW TOKEN
+  // const payload = { id: newUser.id };
 
-  // const token = jwt.sign(payload, process.env.JWT_SECRET, {
-  //   expiresIn: process.env.JWT_EXPIRES_IN,
+  // // const token = jwt.sign(payload, process.env.JWT_SECRET, {
+  // //   expiresIn: process.env.JWT_EXPIRES_IN,
+  // // });
+
+  // const token = signToken(payload);
+
+  // // For logging in user we will use jwt.verify function
+
+  // console.log('New user:');
+  // console.log(newUser);
+
+  // // SEND THE TOKEN TO THE USER THEN THE USER STORES IT SOMEWHERE ELSE
+
+  // // Send new user to the client
+  // res.status(201).json({
+  //   status: 'success',
+  //   token,
+  //   // Envelope data
+  //   data: {
+  //     user: newUser,
+  //   },
   // });
 
-  const token = signToken(payload);
-
-  // For logging in user we will use jwt.verify function
-
-  console.log('New user:');
-  console.log(newUser);
-
-  // SEND THE TOKEN TO THE USER THEN THE USER STORES IT SOMEWHERE ELSE
-
-  // Send new user to the client
-  res.status(201).json({
-    status: 'success',
-    token,
-    // Envelope data
-    data: {
-      user: newUser,
-    },
-  });
+  createSendToken(newUser, 201, res);
 });
 
 // 127.0.0.1:8000/api/v1/users/login
@@ -132,17 +152,21 @@ exports.login = catchAsync(async (req, res, next) => {
   // Implement a route
   // const token = '';
 
-  const payload = { id: user._id };
+  // Log the user in and send back jwt
 
-  const token = signToken(payload);
+  // const payload = { id: user._id };
 
-  console.log('Token sign in:');
-  console.log(token);
+  // const token = signToken(payload);
 
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  // console.log('Token sign in:');
+  // console.log(token);
+
+  // res.status(200).json({
+  //   status: 'success',
+  //   token,
+  // });
+
+  createSendToken(user, 200, res);
 });
 
 // Function to protect route
@@ -320,25 +344,181 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   if (!user) next(new AppError('There is no user with email address', 404));
 
-  // // 2) Generate the random reset token
-  // // To create a random token we're actually going to create an instance method on the User becuase this really has to do with the user data itself.
+  // 2) Generate the random reset token
+  // To create a random token we're actually going to create an instance method on the User becuase this really has to do with the user data itself.
   const resetToken = user.createPasswordResetToken();
 
   await user.save({ validateBeforeSave: false });
 
   // 3) Send it to user's email
+  // Let's now create an email handler function that we can then use throughout our application in utils folder
 
-  res.status(200).json({
-    resetToken,
-  });
+  // res.status(200).json({
+  //   resetToken,
+  // });
 
-  next();
+  const resetURL = `${req.protocol}://${req.get(
+    'host',
+  )}/api/v1/users/resetPassword/${resetToken}`; // Plain reset token and not the encrypted one.
+
+  const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}. \n If you didn't forget your password, please ignore this email`;
+
+  try {
+    // Finally send an email
+    await sendEmail({
+      email: user.email,
+      subject: 'Your password reset token (valid for 10 min)',
+      message,
+    });
+
+    // Send response
+    res.status(200).json({
+      status: 'success',
+      message: 'Token sent to email',
+    });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    await user.save({ validateBeforeSave: true });
+
+    return next(
+      new AppError(
+        'There was an error sending the email. Try again later!',
+        500,
+      ),
+    );
+  }
 });
 
-exports.resetPassword = async (req, res, next) => {
-  res.status(200).json({
-    success: true,
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  // 1) Get user based on token
+
+  // The reset token that we actually sent in the url is the non encrypted token but the one that we have in the database is the encrypted one so what we now need to do is to basically encrypt the original token so that we can compare with the encrypted one that is stored in the database.
+  const hashedToken = createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  // 2) If token has not expired and there is a user, set the new password
+
+  // Identify the used based on token
+  // Query the database with the token
+
+  // Get user based on hashed token and the password reset token is greater than right now
+  // Check if the token has not yet expired
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }, // Note: Behind the scenes MongoDB will then convert everything to same and therefore be able to compare accurately.
   });
 
-  next();
-};
+  if (!user) return next(new AppError('Token is invalid or has expired', 400));
+
+  console.log('Password reset user:');
+  console.log(user);
+
+  // If there is no error and if there is next not called well then let's set a password.
+
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+
+  // Delete the password reset token and expire
+  user.passwordResetExpires = undefined;
+  user.passwordResetToken = undefined;
+
+  // We now have to save it because we only modified the document so it doesn't really save it.
+
+  // Note: In this case we actually don't have to turn off the validators because indeed we actually want to validate it. For example, we need validator confirmation if the password is equal to the passwordConfirm and so that validator automatically validates all for us.
+  await user.save();
+
+  // 3) Update changedPasswordAt property for the current user
+
+  // 4) Log the user in, send the JWT to the client
+  // const payload = { id: user._id };
+
+  // const token = signToken(payload);
+
+  // console.log('Token sign in:');
+  // console.log(token);
+
+  // res.status(200).json({
+  //   status: 'success',
+  //   token,
+  // });
+
+  createSendToken(user, 200, res);
+});
+
+// Note: The update password function is only for authenticated users
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // 1) Get user from collection
+  // console.log('Request user:');
+  // console.log(req.user);
+
+  // Find user based on id
+  // Remember that this update password is only for authenticated or logged in users
+  // Retrieve certain fields
+  // const user = await User.findById(req.user.id);
+  const user = await User.findById(req.user.id).select('+password');
+  console.log('User:');
+  console.log(user);
+  console.log(user.password);
+  /*
+    {
+  _id: new ObjectId("65360cb9998dcd50ba8b894a"),
+  name: 'Abid Arif',
+  email: 'abidarif982@gmail.com',
+  role: 'user',
+  __v: 0,
+  passwordResetExpires: 2023-10-25T10:05:29.470Z,
+  passwordResetToken: 'd25e9f5c8265697a92fa77c10c9acfae4ce0f94e164b3ad8ef90a66a3107de9a'
+}
+  */
+  // const user = await User.find();
+
+  // 2) Check if POSTed current password is correct
+  // const isCorrect = await user.correctPassword(
+  //   req.body.correctPassword,
+  //   user.password,
+  // );
+
+  // console.log('Is correct:');
+  // console.log(isCorrect);
+
+  // Create error if the current password is not correct
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+    // The status code 401 means unauthorized
+    return next(new AppError('Your current password is wrong', 401));
+  }
+  // 3) If so, update password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  await user.save();
+
+  // The validation will then be done automatically by the validator that we specified on the Schema and that will be done once we actually save it. We want to check that if the password is equal to the password confirm.
+
+  // User.findByIdAndUpdate() will NOT work as intended
+  // 1. Validators don't work
+  // 2. The pre save middlewares don't work where we encrypt password and set the passwordChangedAt property to Date.now()
+  // Note: Don't use update anything related to passwords
+
+  // 4) Log user in, send JWT
+
+  // const payload = { id: user._id };
+
+  // const token = signToken(payload);
+
+  // console.log('Token sign in:');
+  // console.log(token);
+
+  // res.status(200).json({
+  //   status: 'success',
+  //   token,
+  // });
+
+  // Refactor code
+  createSendToken(user, 200, res);
+
+  // res.status(200).json({
+  //   status: 'success',
+  // });
+});
