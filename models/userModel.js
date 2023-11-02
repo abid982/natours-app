@@ -71,6 +71,12 @@ const userSchema = new mongoose.Schema({
   passwordResetToken: String,
   // Note: The password reset token will actually expire after a certain amount of time as a security measure for example 10 minutes.
   passwordResetExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    // We do not want to show this in the output. Hide implementation detail from the user
+    select: false,
+  },
 });
 
 // In fact we can also use User.save() in order to update the user
@@ -120,6 +126,18 @@ userSchema.pre('save', function (next) {
   if (!this.isModified('password') || this.isNew) return next();
 
   this.passwordChangedAt = Date.now() - 1000;
+
+  next();
+});
+
+// Query middleware
+// We want to add this middleware function to apply to every query that starts with find for example findByIdAndUpdate & findByIdAndDelete.
+// starts with find
+userSchema.pre(/^find/, function (next) {
+  // this points to current query
+  // const users = await User.find();
+  // We only want to find documents which have the active property set to true
+  this.where({ active: { $ne: false } });
 
   next();
 });
