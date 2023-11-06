@@ -13,6 +13,17 @@ const signToken = payload =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
+const cookieOptions = {
+  expires: new Date(
+    Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+  ), // Basically this expires property will make it so that the browser or the client in general will delete the cookie after it has expired. So we set the expiration date similar to the one that we set in the JSON WEB TOKEN.
+  // secure: true, // The cookie will only be sent on an encrypted connection so basically we're using https.
+  // The cookie only accessible by the web server
+  httpOnly: true, // This will make it so that the cookie can't be accessed or modified in any way by the browser. So this is important in order to prevent those cross-site scripting attacks.
+};
+
+if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
 const createSendToken = (user, statusCode, res) => {
   const payload = { id: user._id };
 
@@ -20,6 +31,13 @@ const createSendToken = (user, statusCode, res) => {
 
   console.log('Token sign in:');
   console.log(token);
+
+  // In order to send a cookie attach it to the response object
+  // res.cookie('cookieName', 'cookieValue')
+  res.cookie('jwt', token, cookieOptions);
+
+  // Remove the password from the output
+  user.password = undefined;
 
   res.status(statusCode).json({
     status: 'success',
