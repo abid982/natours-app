@@ -7,7 +7,7 @@ dotenv.config({ path: './config.env' });
 
 const DB = process.env.DATABASE.replace(
   '<PASSWORD>',
-  process.env.DATABASE_PASSWORD
+  process.env.DATABASE_PASSWORD,
 );
 console.log('Database:');
 console.log(DB);
@@ -24,7 +24,8 @@ mongoose
 // const tours = JSON.parse(fs.readFileSync('./tours-simple.json', 'utf-8'));
 // This dot here is always relative from the folder where the node application was actually started and so that's the home folder and so we're basically looking for this file here in the home folder. ./tours-simple.json
 const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8')
+  // fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8'),
+  fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'),
 );
 console.log('All tours:');
 console.log(tours);

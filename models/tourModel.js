@@ -84,6 +84,40 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Note: MongoDB uses a special data format called GeoJSON in order to specify Geospatial Data
+    // Now how does actually this work? This object that we specified here is actually this time not for the Schema Type Options but this object is now an embedded object.
+    // We need type and coordinated properties
+    //     location: {
+    //       type: "Point",
+    //       coordinates: [-73.856077, 40.848447]
+    // }
+    // It describes certain point location on earth
+    startLocation: {
+      type: {
+        type: String,
+        default: 'Point', // Polygons, Lines
+        enum: ['Point'],
+      },
+      // It expect an array of numbers
+      coordinates: [Number], // [-73.856077, 40.848447]
+      address: String,
+      description: String,
+    },
+
+    // To create new documents and then embed them into another document we need to create an array.
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
   },
   //   Each time that the data is actually outputted as json we want virtuals to be true so basically the virtual to be the part of the output.
   {
