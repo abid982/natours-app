@@ -67,6 +67,10 @@ class APIFeatures {
       // sort('price ratingsAverage');
       // 127.0.01:8000/api/v1/tours?sort=price,-ratingsAverage
 
+      console.log('Sort testing...');
+      console.log(this.queryString.sort);
+      // [ 'duration', 'price' ]
+
       const sortBy = this.queryString.sort.split(',').join(' ');
 
       // console.log('Sort by:');

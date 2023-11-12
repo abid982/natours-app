@@ -1,12 +1,19 @@
 // Import third party modules
 const express = require('express');
 
+const helmet = require('helmet');
+
 // Third party middleware called morgan which makes our development life a bit easier
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
 
 const morgan = require('morgan');
 // There are a log of third party middlewares
 // https://expressjs.com/en/resources/middleware.html
 // GET /api/v1/tours/ 200 13.957 ms - 8621
+
+const rateLimit = require('express-rate-limit');
 
 // Import our own modules
 const AppError = require('./utils/appError');
@@ -20,7 +27,10 @@ const userRouter = require('./routes/userRoutes');
 // This is actually a function which upon calling will add a bunch of methods to our app variable
 const app = express();
 
-// 1) Middlewares
+// 1) GLOBAL MIDDLEWARES
+
+// Set security HTTP headers
+app.use(helmet());
 
 // So calling morgan function will return a function similar to callback function in app.use((req, res, next) => { })
 // app.use(morgan('dev'));
@@ -28,16 +38,68 @@ const app = express();
 // console.log('Process environment:');
 // console.log(process.env.NODE_ENV);
 
+// Development logging
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
+
+// Limit requests from same API
+const limiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 60 minutes
+  limit: 5, // Limit each IP to 100 requests per `window` (here, per 60 minutes).
+  message: 'Too many requests from this IP, please try again in an hour!',
+});
+
+// The limiter is a middleware function so we can use this middleware function
+// Apply the rate limiting middleware to all requests.
+// app.use(limiter);
+// App rate limiter only to /api
+app.use('/api', limiter);
 
 // In order to use to middleware we use app.use() so the use method is the one that we use in order to actually use middleware so add middleware to our middleware stack so this express.json() function here calling the json method basically return a function so that function is then added to the middleware stack.
 // So similar to that we create our own middleware function
 // Include middleware at the top of the file
-app.use(express.json());
+
+// Body parser, reading data from body into req.body
+// app.use(express.json());
+
+// We can also limit the amound of data that comes in the body so here in json we can pas a couple of options so let's say limit to 10kb and so the package will then understand it will parse this string here into a meaningful data
+app.use(express.json({ limit: '10kb' }));
+
+// Data Sanitization
+
+// 1A) Data sanitization against NoSQL query injection
+// We will do it let's say right here after the body parser so this middleware here reads the data into request.body and only after that we can actually clean the data right and so this is a perfect place for doing the data sanitization.
+
+// MongoDB Query
+// {
+//   "email": { "$gt": ""},
+//   "password": "abidali123"
+// }
+// To protect against this let's install another middleware
+// The mongoSanitize is a function which will then return a middleware function which we can then use and this is enough to prevent us agian the kind of attack that we just saw before. So what this middleware does is to look at the request body, the request query string and also at request.params and then it will basically filter our of the dollar signs and dots because that's how the mongodb operators are written and by removing that well these operators are then no longer gonna work.
+app.use(mongoSanitize());
+
+// 2B) Data sanitization against XSS
+// This will then clean any user input from malicious html code basically so imagine that an attacker would try to insert some malicious html code with some JavaScript code attacked to it so if that would then later be injected into our html site it could really create some damage there so using this middleware we prevent that basically by converting all these html symbols.
+app.use(xss());
+
+// app.use(hpp());
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsQuantity',
+      'ratingsAverage',
+      'price',
+      'maxGroupSize',
+    ],
+  }),
+);
 
 // Use a simple built-in middleware
 // Pass directory from which we want to serve static files and in this case is the public directory.
 // This is a built-in middleware function in Express. It serves static files and is based on serve-static.
+
+// Serving static files
 app.use(express.static(`${__dirname}/public`));
 // http://127.0.0.1:3000/overview.html
 // Why we don't need public folder in url?
@@ -51,6 +113,8 @@ app.use(express.static(`${__dirname}/public`));
 // Define a middleware function
 // Send a simple request to our api
 // This single middleware applies to each and every single request and that's because we didn't specify any route.
+
+// Test middleware
 app.use((req, res, next) => {
   // Run code each time there is a new request
   console.log('Hello from the middleware!');
@@ -68,6 +132,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
 
