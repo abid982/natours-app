@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-const validator = require('validator');
+// const validator = require('validator');
+
+// const User = require('./userModel');
 
 // We pass in not only the object with the schema definition itself but also an object for the schema options
 const tourSchema = new mongoose.Schema(
@@ -118,6 +120,18 @@ const tourSchema = new mongoose.Schema(
         day: Number,
       },
     ],
+    // Embed user documents
+    // guides: Array,
+
+    // Child referencing: An array full of ids
+    guides: [
+      {
+        // The type of this is MongoDB Id
+        // We also need to specify the reference and this is where the magic happens behind the scenes and this is really how we establish references between different datasets in Mongoose and for this we do not actually need to have the User to be imported into this document.
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   //   Each time that the data is actually outputted as json we want virtuals to be true so basically the virtual to be the part of the output.
   {
@@ -137,7 +151,8 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
-// DOCUMENT MIDDLEWARE: It runs before save() and create() and not on insertMany() it's not triggered the save middleware
+// DOCUMENT MIDDLEWARE: It runs before save() and create() and not on insertMany()
+
 // It's going to run before an actual event and that event in this case is the save event
 // Pass callback function and this callback function is going to run before an acutal document is saved to the database.
 
@@ -177,6 +192,15 @@ Install slugify package
 
   next();
 });
+
+// It is responsible for embedding
+// tourSchema.pre('save', async function (next) {
+//   const guidesPromises = this.guides.map(async id => await User.findById(id));
+
+//   this.guides = await Promise.all(guidesPromises);
+
+//   next();
+// });
 
 // // We can create multiple pre middleware
 // tourSchema.pre('save', function (next) {
@@ -229,15 +253,26 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
-tourSchema.post(/^find/, function (docs, next) {
-  // console.log('Docs:');
-  // console.log(docs);
-  // console.log('this post find hook:');
-  // console.log(this);
+// The function runs each time where there is a query
+// Remember that in the query middleware this always points to the current query
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -role',
+  });
 
-  // console.log(`Query took ${Date.now() - this.start} milliseconds...`);
   next();
 });
+
+// tourSchema.post(/^find/, function (docs, next) {
+//   // console.log('Docs:');
+//   // console.log(docs);
+//   // console.log('this post find hook:');
+//   // console.log(this);
+
+//   // console.log(`Query took ${Date.now() - this.start} milliseconds...`);
+//   next();
+// });
 
 // Result: We're going to use a lot throughout the course because middleware is really a fundamental concept that's really important for a lot of stuff that we need in out applications.
 

@@ -53,7 +53,6 @@ exports.aliasTopTours = (req, res, next) => {
 
 // 2) Route Handlers
 exports.getAllTours = catchAsync(async (req, res, next) => {
-
   // console.log('Req headers:');
   // console.log(req.headers);
   // Create a new object
@@ -274,6 +273,14 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 exports.getTour = catchAsync(async (req, res, next) => {
   // const tour = await Tour.findById({ _id: req.params.id });
   const tour = await Tour.findById(req.params.id);
+  // const tour = await Tour.findById(req.params.id).populate('guides');
+
+  // Note: Use query middleware to avoid from duplicate code
+  // const tour = await Tour.findById(req.params.id).populate({
+  //   path: 'guides',
+  //   select: '-__v -role',
+  // });
+
   // Tour.findOne({ _id: req.params.id });
 
   // If there is no tour then call next with an error so in order to jump straight into our error handling middleware
