@@ -22,6 +22,7 @@ const ErrorHandler = require('./controllers/errorController');
 // Our own modules
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const reviewRouter = require('./routes/reviewRoutes');
 
 // Assign the result of calling express
 // This is actually a function which upon calling will add a bunch of methods to our app variable
@@ -152,6 +153,7 @@ app.use((req, res, next) => {
 // If there is now a request for /api/v1/users/:id then the request will enter the middleware stack and when it hits this middleware here it will run the user router because this route here is matched and so then it enters the user router
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 // For all the verbs
 // For all the routes
