@@ -3,6 +3,7 @@ const express = require('express');
 
 const tourController = require('./../controllers/tourController');
 const authController = require('./../controllers/authController');
+const reviewController = require('./../controllers/reviewController');
 
 const router = express.Router();
 
@@ -51,6 +52,30 @@ router
     authController.protect,
     authController.restrictTo('admin', 'lead-guide'),
     tourController.deleteTour,
+  );
+
+// NESTED ROUTE
+// Note: There is a parent child relationship and in this case reviews is a child of tour parent.
+// This nested route basically means to access the reviews resource on the tours resource.
+// POST /tour/234fad5/reviews
+// We have the tour id right in the url and the user id actually come from the currently logged in user.
+
+// Access reviews from a certain tour
+// GET /tours/234fad4/reviews
+
+// We can go even further and specify the id of the review
+// GET /tours/234fad4/reviews/84887da
+
+// This is a way more easier way of reading and understanding how API works for our API users. It's a way easier for messing around with query strings and all that stuff like that also it really shows how there's a clear relationship between the resources.
+
+// Let's now actually implement this starting with the POST route. Now since the route actully starts with the tours it will be of course redirected to our tour router.
+
+router
+  .route('/:tourId/reviews')
+  .post(
+    authController.protect,
+    authController.restrictTo('user'),
+    reviewController.createReview,
   );
 
 // Default export
