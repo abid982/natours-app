@@ -132,6 +132,14 @@ const tourSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    // Child referencing so the tour referencing the reviews
+    // Best Solution: Virtual Populate
+    // reviews: [
+    //   {
+    //     type: mongoose.Schema.ObjectId,
+    //     ref: 'Review',
+    //   },
+    // ],
   },
   //   Each time that the data is actually outputted as json we want virtuals to be true so basically the virtual to be the part of the output.
   {
@@ -149,6 +157,19 @@ tourSchema.virtual('durationWeeks').get(function () {
   // The this keywork points to the current document
   // Convert days to weeks
   return this.duration / 7;
+});
+
+// Virtual Populate
+// So now with this setup we can actually populate
+tourSchema.virtual('reviews', {
+  // Name of the model that we want to reference
+  ref: 'Review',
+  // Now we actually need to specify the name of the fields in order to connect the two datasets
+  // So here we need to specify the two fields the foreign field and the local field
+  // The foriegnField: This is the name of the field in other model so in the review model in this case where the referece to the current model is stored
+  foreignField: 'tour',
+  // The reference of the current model
+  localField: '_id',
 });
 
 // DOCUMENT MIDDLEWARE: It runs before save() and create() and not on insertMany()

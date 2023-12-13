@@ -272,7 +272,11 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
 exports.getTour = catchAsync(async (req, res, next) => {
   // const tour = await Tour.findById({ _id: req.params.id });
-  const tour = await Tour.findById(req.params.id);
+  // const tour = await Tour.findById(req.params.id);
+
+  // Virtual populate: Specify the name of the field that we want to populate
+  const tour = await Tour.findById(req.params.id).populate('reviews');
+
   // const tour = await Tour.findById(req.params.id).populate('guides');
 
   // Note: Use query middleware to avoid from duplicate code
