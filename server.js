@@ -22,7 +22,11 @@ console.log('Database:');
 // console.log(DB);
 
 mongoose
-  .connect(DB)
+  .connect(DB, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    family: 4,
+  })
   .then(connection => {
     console.log('DB connection successfully...');
     // console.log(connection.connections);
@@ -68,6 +72,9 @@ app.listen();
 const server = app.listen(port, () => {
   console.log(`App running on port ${port}...`);
 });
+
+console.log('Proces env:');
+console.log(process.env.DATABASE);
 
 // const x = 23;
 // x = 66;
