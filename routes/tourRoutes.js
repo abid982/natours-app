@@ -62,20 +62,54 @@ router
   .get(tourController.aliasTopTours, tourController.getAllTours);
 
 router.route('/tour-stats').get(tourController.getToursStats);
-router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
+// router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
+router
+  .route('/monthly-plan/:year')
+  .get(
+    authController.restrictTo('admin', 'lead-guide', 'guide'),
+    tourController.getToursStats,
+  );
 
 // Protect tour routes
 // This middleware function protect runs first and then getAllTours and this middleware will then either return an error if the user is not authenticated so if he's not logged in, or it will call the next middleware which is in this case the getAllTours handler and that then effectively protects this route from unauthorized access.
 // In auth controller create a new middleware function
+// router
+//   .route('/')
+//   .get(authController.protect, tourController.getAllTours)
+//   .post(tourController.createTour);
+
+// WE WANT TO EXPOSE THIS PART OF THE API TO EVERYONE
+// router
+//   .route('/')
+//   .get(tourController.getAllTours)
+//   .post(tourController.createTour);
+
+// router
+//   .route('/:id')
+//   .get(tourController.getTour)
+//   .patch(tourController.updateTour)
+//   .delete(
+//     authController.protect,
+//     authController.restrictTo('admin', 'lead-guide'),
+//     tourController.deleteTour,
+//   );
+
+// HOWEVER THE ACTIONS FOR CREATING AND EDITING TOURS WE ONLY WANT TO ALLOW LEAD GUIDES AND ADMINISTRATORS TO PERFORM THESE ACTIONS SO OF COURSE NO NORMAL USERS AND NO NORMAL GUIDES
 router
   .route('/')
-  .get(authController.protect, tourController.getAllTours)
-  .post(tourController.createTour);
+  .get(tourController.getAllTours)
+  .post(
+    authController.restrictTo('admin', 'lead-guide'),
+    tourController.createTour,
+  );
 
 router
   .route('/:id')
   .get(tourController.getTour)
-  .patch(tourController.updateTour)
+  .patch(
+    authController.restrictTo('admin', 'lead-guide'),
+    tourController.updateTour,
+  )
   .delete(
     authController.protect,
     authController.restrictTo('admin', 'lead-guide'),
