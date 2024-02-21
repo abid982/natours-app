@@ -1,4 +1,5 @@
 // Import third party modules
+const path = require('path');
 const express = require('express');
 
 const helmet = require('helmet');
@@ -28,7 +29,21 @@ const reviewRouter = require('./routes/reviewRoutes');
 // This is actually a function which upon calling will add a bunch of methods to our app variable
 const app = express();
 
+// The first step is to actually tell express what template engine we're gonna use
+// setting for the view engine and set to pug
+app.set('view engine', 'pug');
+
+// app.set('views', './views');
+app.set('views', path.join(__dirname, 'views'));
+
+// So we defined the view engine now we actually need to define where all these views ar now located in our file systems
+// Note: The pug templates are also called views
+
 // 1) GLOBAL MIDDLEWARES
+
+// Serving static files
+// app.use(express.static(`${__dirname}/public`));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Set security HTTP headers
 app.use(helmet());
@@ -100,8 +115,9 @@ app.use(
 // Pass directory from which we want to serve static files and in this case is the public directory.
 // This is a built-in middleware function in Express. It serves static files and is based on serve-static.
 
-// Serving static files
-app.use(express.static(`${__dirname}/public`));
+// // Serving static files
+// // app.use(express.static(`${__dirname}/public`));
+// app.use(express.static(path.join(__dirname, 'public')));
 // http://127.0.0.1:3000/overview.html
 // Why we don't need public folder in url?
 // Well simply because when we open up a url that it can't find in any of our routes it will then look in that public folder that we defined and it kind of sets that folder to the root.
@@ -151,6 +167,17 @@ app.use((req, res, next) => {
 // This is already in our kind of parent route up here right. The tourRouter is a small mini application.
 // We cannot user routers before we actually declare them.
 // If there is now a request for /api/v1/users/:id then the request will enter the middleware stack and when it hits this middleware here it will run the user router because this route here is matched and so then it enters the user router
+
+// Render page in browser
+app.get('/', (req, res) => {
+  // res.status(200).json()
+  // Render the template athat we pass in
+  res.status(200).render('base', {
+    tour: 'The Forest Hiker',
+    user: 'Jonas',
+  });
+});
+
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
