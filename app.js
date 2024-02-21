@@ -24,6 +24,7 @@ const ErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
+const viewRouter = require('./routes/viewRoutes');
 
 // Assign the result of calling express
 // This is actually a function which upon calling will add a bunch of methods to our app variable
@@ -168,28 +169,29 @@ app.use((req, res, next) => {
 // We cannot user routers before we actually declare them.
 // If there is now a request for /api/v1/users/:id then the request will enter the middleware stack and when it hits this middleware here it will run the user router because this route here is matched and so then it enters the user router
 
-// Render page in browser
-app.get('/', (req, res) => {
-  // res.status(200).json()
-  // Render the template athat we pass in
-  res.status(200).render('base', {
-    tour: 'The Forest Hiker',
-    user: 'Jonas',
-  });
-});
+// // Render page in browser
+// app.get('/', (req, res) => {
+//   // res.status(200).json()
+//   // Render the template athat we pass in
+//   res.status(200).render('base', {
+//     tour: 'The Forest Hiker',
+//     user: 'Jonas',
+//   });
+// });
 
-app.get('/overview', (req, res) => {
-  res.status(200).render('overview', {
-    title: 'All Tours',
-  });
-});
+// app.get('/overview', (req, res) => {
+//   res.status(200).render('overview', {
+//     title: 'All Tours',
+//   });
+// });
 
-app.get('/tour', (req, res) => {
-  res.status(200).render('tour', {
-    title: 'The Forest Hiker',
-  });
-});
+// app.get('/tour', (req, res) => {
+//   res.status(200).render('tour', {
+//     title: 'The Forest Hiker',
+//   });
+// });
 
+app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
