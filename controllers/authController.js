@@ -187,6 +187,40 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+// Only for rendered pages, no errors!
+exports.isLoggedIn = catchAsync(async (req, res, next) => {
+  // 1) Verify token
+  if (req.cookies.jwt) {
+    const decoded = await promisify(jwt.verify)(
+      req.cookies.jwt,
+      process.env.JWT_SECRET,
+    );
+
+    // 2) Check if user still exists
+    const currentUser = await User.findById(decoded.id);
+
+    console.log('Current user:');
+    console.log(currentUser);
+
+    if (!currentUser) {
+      return next();
+    }
+
+    // 3) Check if user changed password after the token was issued
+    // If the password was actually changed well in this case we actually want an error
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+      return next();
+    }
+
+    // THERE IS A LOGGED IN USER
+    res.locals.user = currentUser;
+    // req.user = currentUser;
+    // next();
+  }
+
+  next();
+});
+
 // Function to protect route
 exports.protect = catchAsync(async (req, res, next) => {
   // Lining out a couple of steps
@@ -206,6 +240,9 @@ exports.protect = catchAsync(async (req, res, next) => {
 
     // console.log('Real token:');
     // console.log(token);
+    // We also want to read jwt from a cookie
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   // If there is no token then the user not logged in and create an error
