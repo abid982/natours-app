@@ -296,43 +296,6 @@ exports.logout = (req, res) => {
 //   next();
 // });
 
-exports.isLoggedIn = async (req, res, next) => {
-  // 1) Verify token
-  if (req.cookies.jwt) {
-    try {
-      const decoded = await promisify(jwt.verify)(
-        req.cookies.jwt,
-        process.env.JWT_SECRET,
-      );
-
-      // 2) Check if user still exists
-      const currentUser = await User.findById(decoded.id);
-
-      console.log('Current user:');
-      console.log(currentUser);
-
-      if (!currentUser) {
-        return next();
-      }
-
-      // 3) Check if user changed password after the token was issued
-      // If the password was actually changed well in this case we actually want an error
-      if (currentUser.changedPasswordAfter(decoded.iat)) {
-        return next();
-      }
-
-      // THERE IS A LOGGED IN USER
-      res.locals.user = currentUser;
-      // req.user = currentUser;
-      // next();
-    } catch (err) {
-      return next();
-    }
-  }
-
-  next();
-};
-
 // Function to protect route
 exports.protect = catchAsync(async (req, res, next) => {
   // Lining out a couple of steps
@@ -477,12 +440,50 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // Put the entire user data on the request
   req.user = currentUser;
+  res.locals.user = currentUser;
 
   // So only if there was no problems in any of these steps here only then of course next will be called which will then get access to the route that we protected so in our current example getAllTours handler.
 
   // GRANT ACCESS TO THE PROTECTED ROUTE
   next();
 });
+
+exports.isLoggedIn = async (req, res, next) => {
+  // 1) Verify token
+  if (req.cookies.jwt) {
+    try {
+      const decoded = await promisify(jwt.verify)(
+        req.cookies.jwt,
+        process.env.JWT_SECRET,
+      );
+
+      // 2) Check if user still exists
+      const currentUser = await User.findById(decoded.id);
+
+      console.log('Current user:');
+      console.log(currentUser);
+
+      if (!currentUser) {
+        return next();
+      }
+
+      // 3) Check if user changed password after the token was issued
+      // If the password was actually changed well in this case we actually want an error
+      if (currentUser.changedPasswordAfter(decoded.iat)) {
+        return next();
+      }
+
+      // THERE IS A LOGGED IN USER
+      res.locals.user = currentUser;
+      // req.user = currentUser;
+      // next();
+    } catch (err) {
+      return next();
+    }
+  }
+
+  next();
+};
 
 // How are we actually going to implement this because usually we cannot pass arguments into a middleware function right butin this case we really want to. We want to pass in the roles who are allowed to access the resource right so in thiscase the admin and the lead guide. We need a way of basically passing in arguments into the middleware function in a way that usually doesn't work so how are we going to do that. Well in here we will actually create like a wrapper function which will then return a middleware function that we actually want to create.
 // We want to pass an arbitrary number of arguments and so we can use the rest parameter syntax and this will then create an array of all the arguments that were specified.
